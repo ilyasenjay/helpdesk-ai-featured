@@ -5,7 +5,10 @@
   "private": true,
   "scripts": {
     "dev": "bun --hot src/index.ts",
-    "start": "bun src/index.ts"
+    "start": "bun src/index.ts",
+    "db:migrate": "bunx prisma migrate dev",
+    "db:generate": "bunx prisma generate",
+    "db:studio": "bunx prisma studio"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -16,7 +19,9 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@prisma/client": "^7.8.0",
     "cors": "^2.8.6",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "prisma": "^7.8.0"
   }
 }
