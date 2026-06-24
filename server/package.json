@@ -6,22 +6,26 @@
   "scripts": {
     "dev": "bun --hot src/index.ts",
     "start": "bun src/index.ts",
-    "db:migrate": "bunx prisma migrate dev",
-    "db:generate": "bunx prisma generate",
-    "db:studio": "bunx prisma studio"
+    "db:migrate": "bun node_modules/prisma/build/index.js migrate dev",
+    "db:generate": "bun node_modules/prisma/build/index.js generate",
+    "db:studio": "bun node_modules/prisma/build/index.js studio"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6"
+    "@types/express": "^5.0.6",
+    "@types/pg": "^8.20.0"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "better-auth": "^1.6.20",
     "cors": "^2.8.6",
     "express": "^5.2.1",
+    "pg": "^8.22.0",
     "prisma": "^7.8.0"
   }
 }
