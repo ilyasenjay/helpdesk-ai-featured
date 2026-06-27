@@ -15,6 +15,7 @@ model User {
   email         String    @unique
   emailVerified Boolean   @default(false)
   image         String?
+  role          Role      @default(agent)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
@@ -74,8 +75,8 @@ model Verification {
 // ── Enums ─────────────────────────────────────────────────────────────────────
 
 enum Role {
-  ADMIN
-  AGENT
+  admin
+  agent
 }
 
 enum TicketStatus {

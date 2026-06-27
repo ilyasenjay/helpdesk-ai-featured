@@ -8,7 +8,8 @@
     "start": "bun src/index.ts",
     "db:migrate": "bun node_modules/prisma/build/index.js migrate dev",
     "db:generate": "bun node_modules/prisma/build/index.js generate",
-    "db:studio": "bun node_modules/prisma/build/index.js studio"
+    "db:studio": "bun node_modules/prisma/build/index.js studio",
+    "db:seed": "bun src/seed.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
