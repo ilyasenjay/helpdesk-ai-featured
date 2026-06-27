@@ -1,28 +1,18 @@
-import { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
-
-function Home() {
-  const [status, setStatus] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("/api/health")
-      .then((res) => res.json())
-      .then((data) => setStatus(data.status))
-      .catch(() => setStatus("unreachable"));
-  }, []);
-
-  return (
-    <>
-      <h1>Helpdesk</h1>
-      <p>Server status: {status ?? "checking..."}</p>
-    </>
-  );
-}
+import Login from "./pages/Login";
+import HomePage from "./pages/HomePage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Layout from "./components/Layout";
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route path="/" element={<HomePage />} />
+        </Route>
+      </Route>
     </Routes>
   );
 }
