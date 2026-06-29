@@ -1,13 +1,25 @@
+import "./lib/env";
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
 import { requireAuth } from "./lib/requireAuth";
+import { env } from "./lib/env";
 
 const app = express();
-const PORT = process.env.PORT ?? 3000;
 
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(helmet());
+app.use(cors({ origin: env.clientUrl, credentials: true }));
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use("/api", apiLimiter);
 
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
@@ -18,9 +30,9 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.get("/api/me", requireAuth, (req, res) => {
-  res.json({ user: req.user, session: req.session });
+  res.json({ user: req.user });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.listen(env.port, () => {
+  console.log(`Server running on http://localhost:${env.port}`);
 });
