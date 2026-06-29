@@ -27,8 +27,8 @@ new-helpdesk/
 # Server (hot reload via Bun)
 bun run dev:server
 
-# Client
-bun run dev:client
+# Client — must use Node 22; bun run dev:client fails (crypto API mismatch)
+cd client && PATH=~/.nvm/versions/node/v22.22.3/bin:$PATH node_modules/.bin/vite
 ```
 
 The Vite dev server proxies all `/api/*` requests to `http://localhost:3000`.
