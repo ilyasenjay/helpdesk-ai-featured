@@ -5,6 +5,10 @@
   "scripts": {
     "dev:server": "bun run --cwd server dev",
     "dev:client": "bun run --cwd client dev",
-    "install:all": "bun install --cwd server && bun install --cwd client"
+    "install:all": "bun install --cwd server && bun install --cwd client",
+    "test:e2e": "node node_modules/.bin/playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1"
   }
 }

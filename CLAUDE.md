@@ -55,7 +55,42 @@ Always use context7 to fetch up-to-date documentation for any library, framework
   ```
 - The `base-nova` style generates `Input` using `@base-ui/react/input` which does **not** forward refs — this breaks react-hook-form. Always use a native `<input>` with `React.forwardRef` instead (see `client/src/components/ui/input.tsx`).
 
+## E2E Testing (Playwright)
+
+- Tests live in `e2e/`, config at `playwright.config.ts` (root)
+- Must run under Node 22 (Playwright is a Node tool):
+  ```sh
+  PATH=~/.nvm/versions/node/v22.22.3/bin:$PATH bun run test:e2e
+  ```
+- Uses a **separate test database** (`helpdesk_test`) — never touches the dev DB
+- Test env file: `server/.env.test` (gitignored — copy from `server/.env.test.example`)
+- `e2e/global-setup.ts` — creates DB, runs migrations, seeds test users before each run
+- `e2e/global-teardown.ts` — truncates all tables after each run (users won't persist after the run — this is by design)
+- Test users seeded by `server/src/seed-test.ts`:
+  - Admin: `admin@e2etest.local` / `AdminPass123!`
+  - Agent: `agent@e2etest.local` / `AgentPass123!`
+- **Table name casing**: Better Auth tables are lowercase (`user`, `session`, `account`, `verification`); domain model tables are PascalCase (`"Ticket"`, `"Message"`, `"KnowledgeBase"`) — always double-quote PascalCase names in raw SQL
+
 ## Better Auth
 
 - Auth client (`client/src/lib/auth.ts`) uses `baseURL: "http://localhost:5173"` so requests go through the Vite proxy — do **not** point it directly at `localhost:3000` or cookies will be scoped to the wrong origin.
 - Prisma CLI must be run via `bun node_modules/prisma/build/index.js` — `bunx prisma` fails on Node 16.
+- `inferAdditionalFields<typeof auth>()` is added as a plugin to the auth client so `session.user.role` is properly typed — no manual type cast needed.
+- User roles: `admin` and `agent`. Role is set server-side only (`input: false`) — clients cannot escalate their own role.
+
+## Authorization
+
+- `AdminRoute` (`client/src/components/AdminRoute.tsx`) guards admin-only client routes — nest it inside `ProtectedRoute` in `App.tsx`.
+- `requireAdmin` (`server/src/lib/requireAdmin.ts`) guards admin-only API routes — always apply **after** `requireAuth`:
+  ```ts
+  app.get("/api/users", requireAuth, requireAdmin, handler);
+  ```
+- Client-side guards (AdminRoute, navbar role check) are UX only — server-side `requireAdmin` is the real security control.
+
+## Security
+
+- `helmet()` is the first middleware — sets `X-Frame-Options`, `CSP`, `HSTS`, etc.
+- CORS origin is read from `process.env.CLIENT_URL` (not hardcoded).
+- Rate limiting (`express-rate-limit`, 200 req/15 min on `/api/*`) is **production only** — guarded by `process.env.NODE_ENV === "production"`.
+- `server/src/lib/env.ts` validates all required env vars on startup and exits if any are missing.
+- `/api/me` returns only `{ user }` — never expose `req.session` (contains the raw session token).

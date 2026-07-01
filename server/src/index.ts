@@ -1,4 +1,4 @@
-import "./lib/env";
+  import "./lib/env";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -13,13 +13,15 @@ const app = express();
 app.use(helmet());
 app.use(cors({ origin: env.clientUrl, credentials: true }));
 
-const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 200,
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-app.use("/api", apiLimiter);
+if (process.env.NODE_ENV === "production") {
+  const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 200,
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+  app.use("/api", apiLimiter);
+}
 
 app.all("/api/auth/*splat", toNodeHandler(auth));
 
