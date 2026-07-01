@@ -57,19 +57,14 @@ Always use context7 to fetch up-to-date documentation for any library, framework
 
 ## E2E Testing (Playwright)
 
-- Tests live in `e2e/`, config at `playwright.config.ts` (root)
-- Must run under Node 22 (Playwright is a Node tool):
-  ```sh
-  PATH=~/.nvm/versions/node/v22.22.3/bin:$PATH bun run test:e2e
-  ```
-- Uses a **separate test database** (`helpdesk_test`) — never touches the dev DB
-- Test env file: `server/.env.test` (gitignored — copy from `server/.env.test.example`)
-- `e2e/global-setup.ts` — creates DB, runs migrations, seeds test users before each run
-- `e2e/global-teardown.ts` — truncates all tables after each run (users won't persist after the run — this is by design)
-- Test users seeded by `server/src/seed-test.ts`:
-  - Admin: `admin@e2etest.local` / `AdminPass123!`
-  - Agent: `agent@e2etest.local` / `AgentPass123!`
-- **Table name casing**: Better Auth tables are lowercase (`user`, `session`, `account`, `verification`); domain model tables are PascalCase (`"Ticket"`, `"Message"`, `"KnowledgeBase"`) — always double-quote PascalCase names in raw SQL
+See `.claude/agents/playwright-e2e-writer.md` for the full test infrastructure details (run command, test DB, test users, table name casing, webServer config).
+
+**Always use the `playwright-e2e-writer` agent to write e2e tests** — never write them inline. Use it:
+- After completing a new page or feature
+- When the user asks for test coverage on any UI flow
+- For authentication flows, form submissions, route protection, and API-driven UI changes
+
+To invoke: mention "write e2e tests" or "test this" and the agent will be launched automatically. The agent knows the full test infrastructure and writes production-ready, non-flaky Playwright tests.
 
 ## Better Auth
 
