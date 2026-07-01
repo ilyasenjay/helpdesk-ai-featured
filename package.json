@@ -6,7 +6,8 @@
     "dev:server": "bun run --cwd server dev",
     "dev:client": "bun run --cwd client dev",
     "install:all": "bun install --cwd server && bun install --cwd client",
-    "test:e2e": "node node_modules/.bin/playwright test"
+    "test:e2e": "~/.nvm/versions/node/v22.22.3/bin/node node_modules/.bin/playwright test",
+    "test:e2e:ui": "~/.nvm/versions/node/v22.22.3/bin/node node_modules/.bin/playwright test --ui"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1"
