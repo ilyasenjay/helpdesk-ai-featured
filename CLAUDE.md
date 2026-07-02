@@ -46,6 +46,17 @@ Always use context7 to fetch up-to-date documentation for any library, framework
 - REST API routes are prefixed with `/api`
 - Always use context7 for library/framework docs — add `use context7` to any prompt involving APIs, config, or version-specific behavior
 
+## Data Fetching (Client)
+
+- Use **axios** for all HTTP requests — never use `fetch` directly
+  - Always pass `{ withCredentials: true }` so session cookies are sent
+  - Use `axios.isAxiosError(err)` for error type narrowing
+- Use **TanStack Query** (`@tanstack/react-query`) for all server state
+  - `QueryClientProvider` is set up in `client/src/main.tsx`
+  - Define query functions as plain `async` functions at module level (not inside components)
+  - Use `queryKey` arrays that match the resource, e.g. `["users"]`, `["tickets"]`
+  - Never use `useEffect` + `useState` for data fetching — always reach for `useQuery`
+
 ## shadcn/ui
 
 - Components live in `client/src/components/ui/`
