@@ -66,6 +66,28 @@ Always use context7 to fetch up-to-date documentation for any library, framework
   ```
 - The `base-nova` style generates `Input` using `@base-ui/react/input` which does **not** forward refs — this breaks react-hook-form. Always use a native `<input>` with `React.forwardRef` instead (see `client/src/components/ui/input.tsx`).
 
+## Component Testing (Vitest + React Testing Library)
+
+- Test runner: **Vitest** — configured in `client/vite.config.ts` (`environment: "jsdom"`, `globals: true`, `setupFiles: ["./src/test/setup.ts"]`)
+- Setup file (`client/src/test/setup.ts`) imports `@testing-library/jest-dom` for DOM matchers
+- Test files live next to the component they test: `UsersPage.tsx` → `UsersPage.test.tsx`
+
+### Helpers
+
+- `renderWithQuery(ui)` — wraps the component in a fresh `QueryClientProvider` with `retry: false`; import from `src/test/renderWithQuery.tsx`. Use this for any component that calls `useQuery`.
+- Mock axios at the module level with `vi.mock("axios")` and `vi.mocked(axios)` — never let tests hit the real network.
+- Call `vi.clearAllMocks()` in `beforeEach` to prevent mock state leaking between tests.
+
+### Run commands (from `client/`)
+
+```sh
+# Run all tests once
+bun run test
+
+# Interactive UI for writing/debugging tests
+bun run test:ui
+```
+
 ## E2E Testing (Playwright)
 
 See `.claude/agents/playwright-e2e-writer.md` for the full test infrastructure details (run command, test DB, test users, table name casing, webServer config).
