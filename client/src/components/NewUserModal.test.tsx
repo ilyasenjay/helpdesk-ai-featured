@@ -52,7 +52,7 @@ describe("NewUserModal", () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
     vi.mocked(axios).post = vi.fn().mockResolvedValue({ data: { user: {} } });
-    vi.mocked(axios).isAxiosError = vi.fn().mockReturnValue(false);
+    vi.mocked(axios).isAxiosError = vi.fn().mockReturnValue(false) as any;
     renderWithQuery(<NewUserModal onClose={onClose} />);
     await user.type(screen.getByLabelText("Name"), "Jane Smith");
     await user.type(screen.getByLabelText("Email"), "jane@example.com");

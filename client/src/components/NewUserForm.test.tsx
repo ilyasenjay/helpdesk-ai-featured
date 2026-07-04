@@ -69,7 +69,7 @@ describe("NewUserForm", () => {
     });
 
     it("does not call POST when validation fails", async () => {
-      mockedAxios.post = vi.fn();
+      mockedAxios.post = vi.fn() as any;
       renderForm();
       await fillAndSubmit("ab", "not-an-email", "short");
       await waitFor(() =>
@@ -108,7 +108,7 @@ describe("NewUserForm", () => {
         response: { data: { message: "User already exists. Use another email." } },
       });
       mockedAxios.post = vi.fn().mockRejectedValue(err);
-      mockedAxios.isAxiosError = vi.fn().mockReturnValue(true);
+      mockedAxios.isAxiosError = vi.fn().mockReturnValue(true) as any;
       renderForm();
       await fillAndSubmit("Jane Smith", "existing@example.com", "password123");
       await waitFor(() =>
@@ -120,7 +120,7 @@ describe("NewUserForm", () => {
 
     it("shows generic message for non-axios errors", async () => {
       mockedAxios.post = vi.fn().mockRejectedValue(new Error("Network Error"));
-      mockedAxios.isAxiosError = vi.fn().mockReturnValue(false);
+      mockedAxios.isAxiosError = vi.fn().mockReturnValue(false) as any;
       renderForm();
       await fillAndSubmit("Jane Smith", "jane@example.com", "password123");
       await waitFor(() =>
@@ -130,7 +130,7 @@ describe("NewUserForm", () => {
 
     it("does not call onSuccess when the request fails", async () => {
       mockedAxios.post = vi.fn().mockRejectedValue(new Error("Network Error"));
-      mockedAxios.isAxiosError = vi.fn().mockReturnValue(false);
+      mockedAxios.isAxiosError = vi.fn().mockReturnValue(false) as any;
       const { onSuccess } = renderForm();
       await fillAndSubmit("Jane Smith", "jane@example.com", "password123");
       await waitFor(() =>

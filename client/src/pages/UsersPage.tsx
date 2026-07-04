@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { UsersTable, UsersTableSkeleton, type User } from "../components/UsersTable";
 import { Button } from "../components/ui/button";
 import { NewUserModal } from "../components/NewUserModal";
+import { EditUserModal } from "../components/EditUserModal";
 
 async function fetchUsers(): Promise<User[]> {
   const res = await axios.get<{ users: User[] }>("/api/users", {
@@ -14,6 +15,7 @@ async function fetchUsers(): Promise<User[]> {
 
 export default function UsersPage() {
   const [showModal, setShowModal] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
 
   const { data: users, isLoading, error } = useQuery({
     queryKey: ["users"],
@@ -32,9 +34,14 @@ export default function UsersPage() {
       {!isLoading && !error && users?.length === 0 && (
         <p className="text-sm text-muted-foreground">No users found.</p>
       )}
-      {users && users.length > 0 && <UsersTable users={users} />}
+      {users && users.length > 0 && (
+        <UsersTable users={users} onEdit={setEditingUser} />
+      )}
 
       {showModal && <NewUserModal onClose={() => setShowModal(false)} />}
+      {editingUser && (
+        <EditUserModal user={editingUser} onClose={() => setEditingUser(null)} />
+      )}
     </div>
   );
 }
