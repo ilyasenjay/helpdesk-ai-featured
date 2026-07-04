@@ -12,10 +12,24 @@ export const auth = betterAuth({
     additionalFields: {
       role: {
         type: "string",
+        required: true,
         defaultValue: Role.agent,
         input: false,
       },
     },
   },
   plugins: [admin({ defaultRole: Role.agent })],
+  databaseHooks: {
+    session: {
+      create: {
+        before: async (session) => {
+          const user = await prisma.user.findUnique({
+            where: { id: session.userId },
+            select: { deletedAt: true },
+          });
+          if (user?.deletedAt) return false;
+        },
+      },
+    },
+  },
 });

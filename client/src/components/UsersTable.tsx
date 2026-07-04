@@ -1,20 +1,22 @@
-import { Pencil } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
+import { Role } from "../lib/roles";
 
 export type User = {
   id: string;
   name: string;
   email: string;
-  role: "admin" | "agent";
+  role: Role;
   createdAt: string;
 };
 
 interface UsersTableProps {
   users: User[];
   onEdit: (user: User) => void;
+  onDelete: (user: User) => void;
 }
 
-export function UsersTable({ users, onEdit }: UsersTableProps) {
+export function UsersTable({ users, onEdit, onDelete }: UsersTableProps) {
   return (
     <div className="rounded-md border">
       <table className="w-full text-sm">
@@ -39,13 +41,24 @@ export function UsersTable({ users, onEdit }: UsersTableProps) {
                 {new Date(user.createdAt).toLocaleDateString()}
               </td>
               <td className="px-4 py-3 text-right">
-                <button
-                  aria-label={`Edit ${user.name}`}
-                  onClick={() => onEdit(user)}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Pencil size={15} />
-                </button>
+                <div className="flex items-center justify-end gap-2">
+                  <button
+                    aria-label={`Edit ${user.name}`}
+                    onClick={() => onEdit(user)}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Pencil size={15} />
+                  </button>
+                  {user.role !== Role.admin && (
+                    <button
+                      aria-label={`Delete ${user.name}`}
+                      onClick={() => onDelete(user)}
+                      className="text-muted-foreground hover:text-destructive transition-colors"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  )}
+                </div>
               </td>
             </tr>
           ))}
@@ -86,7 +99,7 @@ export function UsersTableSkeleton() {
 
 function RoleBadge({ role }: { role: User["role"] }) {
   const styles =
-    role === "admin"
+    role === Role.admin
       ? "bg-primary/10 text-primary"
       : "bg-muted text-muted-foreground";
   return (

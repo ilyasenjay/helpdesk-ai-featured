@@ -1,5 +1,6 @@
 import { Navigate, Outlet } from "react-router-dom";
 import { authClient } from "../lib/auth";
+import { Role } from "../lib/roles";
 
 export default function AdminRoute() {
   const { data: session, isPending } = authClient.useSession();
@@ -12,5 +13,5 @@ export default function AdminRoute() {
     );
   }
 
-  return session?.user.role === "admin" ? <Outlet /> : <Navigate to="/" replace />;
+  return session?.user.role === Role.admin ? <Outlet /> : <Navigate to="/" replace />;
 }

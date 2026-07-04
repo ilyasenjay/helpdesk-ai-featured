@@ -107,7 +107,9 @@ To invoke: mention "write e2e tests" or "test this" and the agent will be launch
 - Prisma CLI must be run via `bun node_modules/prisma/build/index.js` — `bunx prisma` fails on Node 16.
 - `inferAdditionalFields<typeof auth>()` is added as a plugin to the auth client so `session.user.role` is properly typed — no manual type cast needed.
 - User roles: `admin` and `agent`. Role is set server-side only (`input: false`) — clients cannot escalate their own role.
-- Always use the `Role` enum from `./generated/prisma/client` for role values — never hardcode the strings `"admin"` or `"agent"`.
+- Never hardcode the strings `"admin"` or `"agent"` — always use the `Role` constant:
+  - **Server**: import `Role` from `./generated/prisma/client`
+  - **Client**: import `Role` from `client/src/lib/roles.ts` (mirrors the server enum as a `const` object)
 
 ## Authorization
 
