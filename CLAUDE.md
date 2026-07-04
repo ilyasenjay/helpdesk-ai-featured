@@ -44,6 +44,8 @@ Always use context7 to fetch up-to-date documentation for any library, framework
 - Use `bun` instead of `node`, `bun install` instead of `npm install`, `bunx` instead of `npx`
 - Environment variables live in `server/.env` (Bun loads them automatically — no dotenv)
 - REST API routes are prefixed with `/api`
+- Each resource gets its own router module in `server/src/routes/` and is mounted in `index.ts` with `app.use("/api/<resource>", router)`
+- No `try/catch` needed in async route handlers — Express 5 automatically forwards rejected promises to the error handler
 - Always use context7 for library/framework docs — add `use context7` to any prompt involving APIs, config, or version-specific behavior
 
 ## Data Fetching (Client)
@@ -105,6 +107,7 @@ To invoke: mention "write e2e tests" or "test this" and the agent will be launch
 - Prisma CLI must be run via `bun node_modules/prisma/build/index.js` — `bunx prisma` fails on Node 16.
 - `inferAdditionalFields<typeof auth>()` is added as a plugin to the auth client so `session.user.role` is properly typed — no manual type cast needed.
 - User roles: `admin` and `agent`. Role is set server-side only (`input: false`) — clients cannot escalate their own role.
+- Always use the `Role` enum from `./generated/prisma/client` for role values — never hardcode the strings `"admin"` or `"agent"`.
 
 ## Authorization
 
@@ -114,6 +117,16 @@ To invoke: mention "write e2e tests" or "test this" and the agent will be launch
   app.get("/api/users", requireAuth, requireAdmin, handler);
   ```
 - Client-side guards (AdminRoute, navbar role check) are UX only — server-side `requireAdmin` is the real security control.
+
+## Validation
+
+- Use **Zod** for all request body validation on the server — parse with `schema.safeParse(req.body)` and return `400` with the first issue message on failure
+- Both client and server use Zod v4 — use `z.email()` (top-level, not `z.string().email()`) and pass error messages as `{ error: "..." }` not a plain string:
+  ```ts
+  z.string().min(3, { error: "Name must be at least 3 characters" })
+  z.email({ error: "Invalid email address" })
+  ```
+- On the client, use `zodResolver` from `@hookform/resolvers/zod` with `react-hook-form`
 
 ## Security
 
