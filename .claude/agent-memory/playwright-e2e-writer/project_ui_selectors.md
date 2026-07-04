@@ -36,3 +36,28 @@ metadata:
 - Users link (admin only): `page.getByRole('link', { name: 'Users' })`
 - User name: `page.getByText(session.user.name)` — a `<span>`
 - Sign out button: `page.getByRole('button', { name: 'Sign out' })`
+
+## NewUserModal selectors (`NewUserModal.tsx` + `NewUserForm.tsx`)
+
+- Open with: `page.getByRole('button', { name: 'New User' })` on /users
+- Modal heading: `page.getByRole('heading', { name: 'New User' })` — `<h2>` inside modal
+- Close X button: `page.getByRole('button', { name: 'Close' })` (aria-label="Close")
+- Overlay backdrop: `page.getByTestId('modal-overlay')`
+- Name input: `page.getByLabel('Name')` (id="name")
+- Email input: `page.getByLabel('Email')` (id="email", type="email")
+- Password input: `page.getByLabel('Password')` (id="password", type="password", autoComplete="new-password")
+- Submit button: `page.getByRole('button', { name: 'Create User' })` (shows "Creating…" while pending)
+- Cancel button: `page.getByRole('button', { name: 'Cancel' })`
+- Name validation error: `"Name must be at least 3 characters"`
+- Email validation error: `"Invalid email address"`
+- Password validation error: `"Password must be at least 8 characters"`
+- Server/root error: `page.getByTestId('form-root-error')` — paragraph rendered when errors.root is set
+
+## UsersTable selectors
+
+- Table cells by value: `page.getByRole('cell', { name: value })` — td elements in table have implicit role "cell"
+- Columns: Name, Email, Role (badge), Joined
+
+## type="email" bypass pattern
+
+When a form input has `type="email"` and contains a non-email string, Chromium blocks native form submission with a browser tooltip. Use `submitFormBypassingBrowserValidation(page)` from `e2e/helpers/auth.ts` to dispatch a raw submit event so react-hook-form/Zod validation runs instead.

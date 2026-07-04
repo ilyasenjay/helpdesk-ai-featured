@@ -99,7 +99,7 @@ export function NewUserForm({ onSuccess, onCancel }: Props) {
       </div>
 
       {errors.root && (
-        <p className="text-xs text-destructive">{errors.root.message}</p>
+        <p data-testid="form-root-error" className="text-xs text-destructive">{errors.root.message}</p>
       )}
 
       <div className="flex justify-end gap-2 pt-2">
