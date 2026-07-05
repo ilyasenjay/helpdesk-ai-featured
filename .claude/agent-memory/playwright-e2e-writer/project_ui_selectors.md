@@ -55,8 +55,34 @@ metadata:
 
 ## UsersTable selectors
 
-- Table cells by value: `page.getByRole('cell', { name: value })` — td elements in table have implicit role "cell"
+- Table cells by value: `page.getByRole('cell', { name: value, exact: true })` — `<td>` elements have implicit role "cell"; use `exact: true` to prevent substring collisions
+- Column headers: `page.getByRole('columnheader', { name: 'Name' })` etc. — `<th>` elements
+- Edit button: `page.getByRole('button', { name: 'Edit {user.name}' })` — aria-label on pencil icon button
+- Delete button: `page.getByRole('button', { name: 'Delete {user.name}' })` — aria-label on trash icon button; admin rows have NO delete button
 - Columns: Name, Email, Role (badge), Joined
+
+## EditUserModal selectors (`EditUserModal.tsx` + `EditUserForm.tsx`)
+
+- Trigger: `page.getByRole('button', { name: 'Edit {user.name}' })` on UsersTable row
+- Modal heading: `page.getByRole('heading', { name: 'Edit User' })` — `<h2>`
+- Close X button: `page.getByRole('button', { name: 'Close' })` (aria-label="Close")
+- Name input: `page.getByLabel('Name')` — htmlFor="edit-name", id="edit-name"
+- Email input: `page.getByLabel('Email')` — htmlFor="edit-email", id="edit-email", type="email"
+- Password input: `page.getByLabel('Password')` (partial match covers hint text) — id="edit-password", optional field
+- Save button: `page.getByRole('button', { name: 'Save Changes' })` (shows "Saving…" while pending)
+- Cancel button: `page.getByRole('button', { name: 'Cancel' })`
+- Root server error: rendered as `<p class="text-xs text-destructive">` (no testid; assert with getByText or check errors.root)
+
+## DeleteUserModal selectors (`DeleteUserModal.tsx`)
+
+- Trigger: `page.getByRole('button', { name: 'Delete {user.name}' })` on UsersTable row
+- Modal heading: `page.getByRole('heading', { name: 'Delete User' })` — `<h2>`
+- Overlay: `page.getByTestId('delete-modal-overlay')`
+- Close X button: `page.getByRole('button', { name: 'Close' })` (aria-label="Close")
+- Body text: `page.getByText(user.name)` + `page.getByText('This action cannot be undone.')`
+- Cancel button: `page.getByRole('button', { name: 'Cancel' })`
+- Confirm delete button: `page.getByRole('button', { name: 'Delete' })` (shows "Deleting…" while pending)
+- Error text: `<p class="text-xs text-destructive">` shown when mutation.isError
 
 ## type="email" bypass pattern
 

@@ -44,4 +44,32 @@ TRUNCATEs all tables with RESTART IDENTITY CASCADE after the full test run.
 
 ## Test helpers
 
-- `e2e/helpers/auth.ts` — `loginAs(page, email, password)`, `ADMIN`, `AGENT` constants
+- `e2e/helpers/auth.ts` — `loginAs(page, email, password)`, `ADMIN`, `AGENT` constants, `logout(page)`, `submitFormBypassingBrowserValidation(page)`, `expectLoginPage`, `expectHomePage`, `expectUsersPage`
+
+## API seeding pattern (for beforeEach)
+
+When a test needs pre-existing data (e.g., a user to edit or delete), seed it via the `request` fixture — NOT through the UI. The `request` and `page` fixtures are independent browser contexts; cookies set in `request` do NOT carry over to `page`. Pattern:
+
+```ts
+test.beforeEach(async ({ request }) => {
+  // 1. Sign in via API so subsequent requests carry the session cookie
+  const signIn = await request.post('/api/auth/sign-in/email', {
+    data: { email: ADMIN.email, password: ADMIN.password },
+  });
+  expect(signIn.ok()).toBeTruthy();
+
+  // 2. Seed the test data
+  const create = await request.post('/api/users', {
+    data: { name: testUserName, email: testUserEmail, password: 'TestPass123!' },
+  });
+  expect(create.status()).toBe(201);
+});
+
+test('...', async ({ page }) => {
+  // request cookies don't carry here; log in via UI for browser session
+  await loginAs(page, ADMIN.email, ADMIN.password);
+  // ...
+});
+```
+
+Confirmed working in `create-user.spec.ts` (agent-cannot-POST test) and `user-management.spec.ts`.
