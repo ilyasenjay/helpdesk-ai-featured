@@ -7,9 +7,10 @@ const TEST_DB_URL =
 export default async function globalTeardown(_config: FullConfig): Promise<void> {
   console.log("[e2e:teardown] Truncating test database tables...");
   // Single-quote the SQL so double-quoted names are preserved by the shell.
-  // Better Auth tables use lowercase (@@map); domain models use PascalCase (no @@map).
+  // All tables (Better Auth and domain models alike) are mapped to lowercase
+  // snake_case names via @@map in schema.prisma.
   execSync(
-    `psql "${TEST_DB_URL}" -c 'TRUNCATE TABLE "Message", "Ticket", "KnowledgeBase", verification, session, account, "user" RESTART IDENTITY CASCADE'`,
+    `psql "${TEST_DB_URL}" -c 'TRUNCATE TABLE "message", "ticket", "knowledge_base", verification, session, account, "user" RESTART IDENTITY CASCADE'`,
     { stdio: "inherit" }
   );
   console.log("[e2e:teardown] Teardown complete.");

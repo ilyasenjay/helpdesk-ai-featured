@@ -47,7 +47,7 @@ test.describe("Create user — happy path", () => {
 
     // New row should appear in the users table
     await expect(page.getByRole("cell", { name: email })).toBeVisible();
-    await expect(page.getByRole("cell", { name: name })).toBeVisible();
+    await expect(page.getByRole("cell", { name: name, exact: true })).toBeVisible();
   });
 });
 
