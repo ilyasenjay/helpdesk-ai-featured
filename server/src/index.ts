@@ -8,11 +8,16 @@ import { auth } from "./lib/auth";
 import { requireAuth } from "./lib/requireAuth";
 import { env } from "./lib/env";
 import usersRouter from "./routes/users";
+import ticketsRouter from "./routes/tickets";
+import webhooksRouter from "./routes/webhooks";
 
 const app = express();
 
 app.use(helmet());
 app.use(cors({ origin: env.clientUrl, credentials: true }));
+
+// Mount webhooks before the rate limiter — Mailgun delivery spikes must never be throttled
+app.use("/api/webhooks", webhooksRouter);
 
 if (process.env.NODE_ENV === "production") {
   const apiLimiter = rateLimit({
@@ -37,6 +42,7 @@ app.get("/api/me", requireAuth, (req, res) => {
 });
 
 app.use("/api/users", usersRouter);
+app.use("/api/tickets", ticketsRouter);
 
 app.listen(env.port, () => {
   console.log(`Server running on http://localhost:${env.port}`);

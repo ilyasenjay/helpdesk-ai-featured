@@ -47,6 +47,7 @@ Always use context7 to fetch up-to-date documentation for any library, framework
 - Each resource gets its own router module in `server/src/routes/` and is mounted in `index.ts` with `app.use("/api/<resource>", router)`
 - No `try/catch` needed in async route handlers — Express 5 automatically forwards rejected promises to the error handler
 - Always use context7 for library/framework docs — add `use context7` to any prompt involving APIs, config, or version-specific behavior
+- All Prisma models must use `@@map("snake_case")` to map to lowercase table names — e.g. `@@map("ticket")`, `@@map("knowledge_base")`. Never leave a model without `@@map`; Prisma defaults to the PascalCase model name which is inconsistent with the auth tables
 
 ## Data Fetching (Client)
 
@@ -107,9 +108,9 @@ To invoke: mention "write e2e tests" or "test this" and the agent will be launch
 - Prisma CLI must be run via `bun node_modules/prisma/build/index.js` — `bunx prisma` fails on Node 16.
 - `inferAdditionalFields<typeof auth>()` is added as a plugin to the auth client so `session.user.role` is properly typed — no manual type cast needed.
 - User roles: `admin` and `agent`. Role is set server-side only (`input: false`) — clients cannot escalate their own role.
-- Never hardcode the strings `"admin"` or `"agent"` — always use the `Role` constant:
-  - **Server**: import `Role` from `./generated/prisma/client`
-  - **Client**: import `Role` from `client/src/lib/roles.ts` (mirrors the server enum as a `const` object)
+- Never hardcode role/status/category strings — always use the typed enum:
+  - **Server**: import enums (`Role`, `TicketStatus`, `TicketCategory`, `MessageSender`) from `./generated/prisma/client`
+  - **Client**: import from the matching file in `client/src/lib/` (`roles.ts`, `ticket-status.ts`, `ticket-category.ts`) — defined as TypeScript string enums
 
 ## Authorization
 

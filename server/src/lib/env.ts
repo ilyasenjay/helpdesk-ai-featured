@@ -10,4 +10,5 @@ for (const key of required) {
 export const env = {
   clientUrl: process.env.CLIENT_URL as string,
   port: process.env.PORT ?? "3000",
+  mailgunWebhookSigningKey: process.env.MAILGUN_WEBHOOK_SIGNING_KEY,
 };

@@ -4,6 +4,7 @@ import axios from "axios";
 import UsersPage from "./UsersPage";
 import type { User } from "../components/UsersTable";
 import { renderWithQuery } from "../test/renderWithQuery";
+import { Role } from "../lib/roles";
 
 vi.mock("axios");
 const mockedAxios = vi.mocked(axios);
@@ -13,14 +14,14 @@ const USERS: User[] = [
     id: "1",
     name: "Alice Admin",
     email: "alice@example.com",
-    role: "admin",
+    role: Role.admin,
     createdAt: "2024-01-15T00:00:00.000Z",
   },
   {
     id: "2",
     name: "Bob Agent",
     email: "bob@example.com",
-    role: "agent",
+    role: Role.agent,
     createdAt: "2024-03-20T00:00:00.000Z",
   },
 ];

@@ -85,9 +85,9 @@ enum Role {
 }
 
 enum TicketStatus {
-  OPEN
-  RESOLVED
-  CLOSED
+  open
+  resolved
+  closed
 }
 
 enum TicketCategory {
@@ -105,26 +105,32 @@ enum MessageSender {
 // ── Domain Models ─────────────────────────────────────────────────────────────
 
 model Ticket {
-  id        String          @id @default(cuid())
-  subject   String
-  body      String
-  status    TicketStatus    @default(OPEN)
-  category  TicketCategory?
-  aiSummary String?
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  messages  Message[]
+  id            Int             @id @default(autoincrement())
+  subject       String
+  body          String
+  customerEmail String?
+  senderName    String
+  status        TicketStatus    @default(open)
+  category      TicketCategory?
+  aiSummary     String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  messages      Message[]
+
+  @@map("ticket")
 }
 
 model Message {
   id        String        @id @default(cuid())
   body      String
   sender    MessageSender
-  ticketId  String
+  ticketId  Int
   ticket    Ticket        @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   userId    String?
   user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
   createdAt DateTime      @default(now())
+
+  @@map("message")
 }
 
 model KnowledgeBase {
@@ -133,4 +139,6 @@ model KnowledgeBase {
   content   String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("knowledge_base")
 }
