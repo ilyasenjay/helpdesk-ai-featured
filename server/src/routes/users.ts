@@ -33,6 +33,15 @@ router.get("/", requireAuth, requireAdmin, async (_req, res) => {
   res.json({ users });
 });
 
+router.get("/agents", requireAuth, async (_req, res) => {
+  const agents = await prisma.user.findMany({
+    where: { deletedAt: null },
+    select: { id: true, name: true, email: true },
+    orderBy: { name: "asc" },
+  });
+  res.json({ agents });
+});
+
 router.post("/", requireAuth, requireAdmin, async (req, res) => {
   const parsed = createUserSchema.safeParse(req.body);
   if (!parsed.success) {

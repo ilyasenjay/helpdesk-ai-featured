@@ -29,6 +29,19 @@ export const ticketCategoryFilterValues = [
 
 export const ticketPageSizes = [10, 20, 50, 100] as const;
 
+export const updateTicketSchema = z.object({
+  status: z.enum([TicketStatus.open, TicketStatus.resolved, TicketStatus.closed]).optional(),
+  category: z
+    .enum([
+      TicketCategory.GENERAL_QUESTION,
+      TicketCategory.TECHNICAL_QUESTION,
+      TicketCategory.REFUND_REQUEST,
+    ])
+    .nullable()
+    .optional(),
+  assignedToId: z.string().min(1, { error: "Invalid assignedToId" }).nullable().optional(),
+});
+
 export const ticketsQuerySchema = z.object({
   sortBy: z.enum(ticketSortColumns, { error: "Invalid sortBy value" }).default("createdAt"),
   sortOrder: z.enum(["asc", "desc"], { error: "Invalid sortOrder value" }).default("desc"),

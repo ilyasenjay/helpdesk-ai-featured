@@ -69,6 +69,17 @@ const columns: ColumnDef<Ticket>[] = [
       <span className="text-muted-foreground">{new Date(getValue<string>()).toLocaleString()}</span>
     ),
   },
+  {
+    id: "assignedTo",
+    accessorKey: "assignedTo",
+    header: "Assigned to",
+    enableSorting: false,
+    cell: ({ row }) => (
+      <span className="text-muted-foreground">
+        {row.original.assignedTo?.name ?? "Unassigned"}
+      </span>
+    ),
+  },
 ];
 
 export function TicketsTable({ tickets, sorting, onSortingChange }: TicketsTableProps) {
@@ -92,14 +103,18 @@ export function TicketsTable({ tickets, sorting, onSortingChange }: TicketsTable
             <tr key={headerGroup.id} className="border-b bg-muted/50">
               {headerGroup.headers.map((header) => (
                 <th key={header.id} className="sticky top-0 z-10 bg-muted/50 px-4 py-2 text-left font-medium text-muted-foreground">
-                  <button
-                    type="button"
-                    className="flex items-center gap-1 hover:text-foreground"
-                    onClick={header.column.getToggleSortingHandler()}
-                  >
-                    {flexRender(header.column.columnDef.header, header.getContext())}
-                    <SortIcon direction={header.column.getIsSorted()} />
-                  </button>
+                  {header.column.getCanSort() ? (
+                    <button
+                      type="button"
+                      className="flex items-center gap-1 hover:text-foreground"
+                      onClick={header.column.getToggleSortingHandler()}
+                    >
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                      <SortIcon direction={header.column.getIsSorted()} />
+                    </button>
+                  ) : (
+                    flexRender(header.column.columnDef.header, header.getContext())
+                  )}
                 </th>
               ))}
             </tr>
@@ -133,7 +148,7 @@ export function TicketsTableSkeleton() {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b bg-muted/50">
-            {["Subject", "From", "Status", "Category", "Created"].map((col) => (
+            {["Subject", "From", "Status", "Category", "Created", "Assigned to"].map((col) => (
               <th key={col} className="px-4 py-3 text-left font-medium text-muted-foreground">
                 {col}
               </th>
@@ -148,6 +163,7 @@ export function TicketsTableSkeleton() {
               <td className="px-4 py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
               <td className="px-4 py-3"><Skeleton className="h-4 w-28" /></td>
               <td className="px-4 py-3"><Skeleton className="h-4 w-32" /></td>
+              <td className="px-4 py-3"><Skeleton className="h-4 w-24" /></td>
             </tr>
           ))}
         </tbody>

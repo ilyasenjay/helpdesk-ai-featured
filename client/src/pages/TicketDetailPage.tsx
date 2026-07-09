@@ -1,12 +1,22 @@
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Mail, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 import { StatusBadge, categoryLabels, statusBadgeStyles } from "../components/TicketsTable";
 import { TicketStatus, statusLabels } from "../lib/ticket-status";
 import { MessageSender } from "../lib/tickets";
-import type { Message, TicketDetail } from "../lib/tickets";
+import type { Message, TicketAssignee, TicketDetail } from "../lib/tickets";
+
+const UNASSIGNED = "UNASSIGNED" as const;
+type AssigneeValue = string | typeof UNASSIGNED;
 
 const senderLabels: Record<MessageSender, string> = {
   [MessageSender.customer]: "Customer",
@@ -18,6 +28,22 @@ async function fetchTicket(id: string): Promise<TicketDetail> {
   const res = await axios.get<{ ticket: TicketDetail }>(`/api/tickets/${id}`, {
     withCredentials: true,
   });
+  return res.data.ticket;
+}
+
+async function fetchAgents(): Promise<TicketAssignee[]> {
+  const res = await axios.get<{ agents: TicketAssignee[] }>("/api/users/agents", {
+    withCredentials: true,
+  });
+  return res.data.agents;
+}
+
+async function assignTicket(id: string, assignedToId: string | null): Promise<TicketDetail> {
+  const res = await axios.patch<{ ticket: TicketDetail }>(
+    `/api/tickets/${id}`,
+    { assignedToId },
+    { withCredentials: true },
+  );
   return res.data.ticket;
 }
 
@@ -40,11 +66,27 @@ function initials(name: string): string {
 
 export default function TicketDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const queryClient = useQueryClient();
 
   const { data: ticket, isLoading, error } = useQuery({
     queryKey: ["ticket", id],
     queryFn: () => fetchTicket(id!),
     enabled: !!id,
+  });
+
+  const { data: agents } = useQuery({
+    queryKey: ["agents"],
+    queryFn: fetchAgents,
+  });
+
+  const assignMutation = useMutation({
+    mutationFn: (assignedToId: string | null) => assignTicket(id!, assignedToId),
+    onSuccess: (updated) => {
+      queryClient.setQueryData<TicketDetail>(["ticket", id], (old) =>
+        old ? { ...old, ...updated } : old,
+      );
+      queryClient.invalidateQueries({ queryKey: ["tickets"] });
+    },
   });
 
   if (isLoading) {
@@ -140,6 +182,36 @@ export default function TicketDetailPage() {
               <CardTitle>Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                  Assigned to
+                </label>
+                <Select<AssigneeValue>
+                  value={ticket.assignedTo?.id ?? UNASSIGNED}
+                  onValueChange={(value) =>
+                    assignMutation.mutate(value === UNASSIGNED ? null : (value ?? null))
+                  }
+                >
+                  <SelectTrigger className="w-full" size="sm">
+                    <SelectValue placeholder="Assigned to">
+                      {(value: AssigneeValue) =>
+                        value === UNASSIGNED
+                          ? "Unassigned"
+                          : (agents?.find((agent) => agent.id === value)?.name ?? "Unassigned")
+                      }
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={UNASSIGNED}>Unassigned</SelectItem>
+                    {agents?.map((agent) => (
+                      <SelectItem key={agent.id} value={agent.id}>
+                        {agent.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="flex justify-between gap-3 text-sm">
                 <span className="text-muted-foreground">Status</span>
                 <span className="font-medium">{statusLabels[ticket.status]}</span>

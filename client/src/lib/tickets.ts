@@ -16,6 +16,12 @@ export interface Message {
   createdAt: string;
 }
 
+export interface TicketAssignee {
+  id: string;
+  name: string;
+  email: string;
+}
+
 export interface Ticket {
   id: number;
   subject: string;
@@ -23,6 +29,7 @@ export interface Ticket {
   customerEmail: string | null;
   status: TicketStatus;
   category: TicketCategory | null;
+  assignedTo: TicketAssignee | null;
   createdAt: string;
   updatedAt: string;
 }

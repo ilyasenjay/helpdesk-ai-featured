@@ -25,6 +25,7 @@ model User {
   sessions      Session[]
   accounts      Account[]
   messages      Message[]
+  assignedTickets Ticket[] @relation("TicketAssignee")
 
   @@map("user")
 }
@@ -113,6 +114,8 @@ model Ticket {
   status        TicketStatus    @default(open)
   category      TicketCategory?
   aiSummary     String?
+  assignedToId  String?
+  assignedTo    User?           @relation("TicketAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   messages      Message[]
