@@ -34,3 +34,5 @@ export interface TicketDetail extends Ticket {
 }
 
 export type TicketSortColumn = "subject" | "senderName" | "status" | "category" | "createdAt";
+
+export type TicketCategoryFilter = TicketCategory | "NONE";

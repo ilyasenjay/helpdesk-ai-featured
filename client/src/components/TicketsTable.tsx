@@ -148,7 +148,7 @@ export function TicketsTableSkeleton() {
   );
 }
 
-const categoryLabels: Record<TicketCategory, string> = {
+export const categoryLabels: Record<TicketCategory, string> = {
   [TicketCategory.generalQuestion]: "General Question",
   [TicketCategory.technicalQuestion]: "Technical Question",
   [TicketCategory.refundRequest]: "Refund Request",
