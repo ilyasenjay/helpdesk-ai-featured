@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAuth } from "../lib/requireAuth";
 import prisma from "../lib/db";
 import { TicketStatus, TicketCategory } from "../generated/prisma/client";
+import { ticketsQuerySchema } from "../lib/tickets";
 
 const router = Router();
 
@@ -22,7 +23,14 @@ const updateTicketSchema = z.object({
     .optional(),
 });
 
-router.get("/", requireAuth, async (_req, res) => {
+router.get("/", requireAuth, async (req, res) => {
+  const parsed = ticketsQuerySchema.safeParse(req.query);
+  if (!parsed.success) {
+    res.status(400).json({ message: firstError(parsed) });
+    return;
+  }
+  const { sortBy, sortOrder } = parsed.data;
+
   const tickets = await prisma.ticket.findMany({
     select: {
       id: true,
@@ -34,7 +42,7 @@ router.get("/", requireAuth, async (_req, res) => {
       createdAt: true,
       updatedAt: true,
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { [sortBy]: sortOrder },
   });
   res.json({ tickets });
 });

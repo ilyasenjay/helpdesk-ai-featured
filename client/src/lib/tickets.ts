@@ -32,3 +32,5 @@ export interface TicketDetail extends Ticket {
   aiSummary: string | null;
   messages: Message[];
 }
+
+export type TicketSortColumn = "subject" | "senderName" | "status" | "category" | "createdAt";
