@@ -6,6 +6,7 @@ import {
   type OnChangeFn,
   type SortingState,
 } from "@tanstack/react-table";
+import { Link } from "react-router-dom";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
 import { TicketStatus } from "../lib/ticket-status";
@@ -23,7 +24,14 @@ const columns: ColumnDef<Ticket>[] = [
     id: "subject",
     accessorKey: "subject",
     header: "Subject",
-    cell: ({ getValue }) => <span className="font-medium">{getValue<string>()}</span>,
+    cell: ({ row, getValue }) => (
+      <Link
+        to={`/tickets/${row.original.id}`}
+        className="font-medium text-primary hover:underline"
+      >
+        {getValue<string>()}
+      </Link>
+    ),
   },
   {
     id: "senderName",
@@ -154,15 +162,16 @@ export const categoryLabels: Record<TicketCategory, string> = {
   [TicketCategory.refundRequest]: "Refund Request",
 };
 
-function StatusBadge({ status }: { status: TicketStatus }) {
-  const styles: Record<TicketStatus, string> = {
-    [TicketStatus.open]: "bg-primary/10 text-primary",
-    [TicketStatus.resolved]: "bg-green-100 text-green-700",
-    [TicketStatus.closed]: "bg-muted text-muted-foreground",
-  };
+export const statusBadgeStyles: Record<TicketStatus, string> = {
+  [TicketStatus.open]: "bg-primary/10 text-primary",
+  [TicketStatus.resolved]: "bg-green-100 text-green-700",
+  [TicketStatus.closed]: "bg-muted text-muted-foreground",
+};
+
+export function StatusBadge({ status }: { status: TicketStatus }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${styles[status]}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusBadgeStyles[status]}`}
     >
       {status}
     </span>

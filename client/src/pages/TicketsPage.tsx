@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../components/ui/select";
-import { TicketStatus } from "../lib/ticket-status";
+import { TicketStatus, statusLabels } from "../lib/ticket-status";
 import { TicketCategory } from "../lib/ticket-category";
 import type {
   TicketCategoryFilter,
@@ -25,11 +25,9 @@ import { ticketPageSizes } from "../lib/tickets";
 type StatusFilter = TicketStatus | "ALL";
 type CategoryFilter = TicketCategoryFilter | "ALL";
 
-const statusLabels: Record<StatusFilter, string> = {
+const statusFilterLabels: Record<StatusFilter, string> = {
   ALL: "All statuses",
-  [TicketStatus.open]: "Open",
-  [TicketStatus.resolved]: "Resolved",
-  [TicketStatus.closed]: "Closed",
+  ...statusLabels,
 };
 
 const categoryFilterLabels: Record<CategoryFilter, string> = {
@@ -112,7 +110,7 @@ export default function TicketsPage() {
         <Select<StatusFilter> value={status} onValueChange={(value) => setStatus(value ?? "ALL")}>
           <SelectTrigger size="sm">
             <SelectValue placeholder="Status">
-              {(value: StatusFilter) => statusLabels[value]}
+              {(value: StatusFilter) => statusFilterLabels[value]}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
