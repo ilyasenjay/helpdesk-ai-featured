@@ -30,7 +30,7 @@ router.get("/", requireAuth, async (req, res) => {
     res.status(400).json({ message: firstError(parsed) });
     return;
   }
-  const { sortBy, sortOrder, status, category, search } = parsed.data;
+  const { sortBy, sortOrder, status, category, search, page, pageSize } = parsed.data;
 
   const where: Prisma.TicketWhereInput = {
     ...(status && { status }),
@@ -38,21 +38,26 @@ router.get("/", requireAuth, async (req, res) => {
     ...(search && { subject: { contains: search, mode: "insensitive" } }),
   };
 
-  const tickets = await prisma.ticket.findMany({
-    where,
-    select: {
-      id: true,
-      subject: true,
-      senderName: true,
-      customerEmail: true,
-      status: true,
-      category: true,
-      createdAt: true,
-      updatedAt: true,
-    },
-    orderBy: { [sortBy]: sortOrder },
-  });
-  res.json({ tickets });
+  const [tickets, total] = await Promise.all([
+    prisma.ticket.findMany({
+      where,
+      select: {
+        id: true,
+        subject: true,
+        senderName: true,
+        customerEmail: true,
+        status: true,
+        category: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      orderBy: { [sortBy]: sortOrder },
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.ticket.count({ where }),
+  ]);
+  res.json({ tickets, total, page, pageSize });
 });
 
 router.get("/:id", requireAuth, async (req, res) => {

@@ -27,10 +27,19 @@ export const ticketCategoryFilterValues = [
   "NONE",
 ] as const;
 
+export const ticketPageSizes = [10, 20, 50, 100] as const;
+
 export const ticketsQuerySchema = z.object({
   sortBy: z.enum(ticketSortColumns, { error: "Invalid sortBy value" }).default("createdAt"),
   sortOrder: z.enum(["asc", "desc"], { error: "Invalid sortOrder value" }).default("desc"),
   status: z.enum(ticketStatusFilterValues, { error: "Invalid status value" }).optional(),
   category: z.enum(ticketCategoryFilterValues, { error: "Invalid category value" }).optional(),
   search: z.string().trim().min(1, { error: "Search must not be empty" }).optional(),
+  page: z.coerce.number().int().min(1, { error: "Invalid page value" }).default(1),
+  pageSize: z.coerce
+    .number()
+    .refine((n) => (ticketPageSizes as readonly number[]).includes(n), {
+      error: "Invalid pageSize value",
+    })
+    .default(10),
 });

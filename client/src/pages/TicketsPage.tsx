@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { SortingState } from "@tanstack/react-table";
 import { TicketsTable, TicketsTableSkeleton, categoryLabels } from "../components/TicketsTable";
 import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
 import {
   Select,
   SelectContent,
@@ -13,7 +14,13 @@ import {
 } from "../components/ui/select";
 import { TicketStatus } from "../lib/ticket-status";
 import { TicketCategory } from "../lib/ticket-category";
-import type { Ticket, TicketCategoryFilter, TicketSortColumn } from "../lib/tickets";
+import type {
+  TicketCategoryFilter,
+  TicketPageSize,
+  TicketSortColumn,
+  TicketsPage as TicketsPageData,
+} from "../lib/tickets";
+import { ticketPageSizes } from "../lib/tickets";
 
 type StatusFilter = TicketStatus | "ALL";
 type CategoryFilter = TicketCategoryFilter | "ALL";
@@ -44,17 +51,24 @@ function toSortParams(sorting: SortingState): { sortBy: TicketSortColumn; sortOr
     : { sortBy: "createdAt", sortOrder: "desc" };
 }
 
-async function fetchTickets(sorting: SortingState, filters: TicketsFilters): Promise<Ticket[]> {
-  const res = await axios.get<{ tickets: Ticket[] }>("/api/tickets", {
+async function fetchTickets(
+  sorting: SortingState,
+  filters: TicketsFilters,
+  page: number,
+  pageSize: TicketPageSize,
+): Promise<TicketsPageData> {
+  const res = await axios.get<TicketsPageData>("/api/tickets", {
     params: {
       ...toSortParams(sorting),
       ...(filters.status !== "ALL" && { status: filters.status }),
       ...(filters.category !== "ALL" && { category: filters.category }),
       ...(filters.search && { search: filters.search }),
+      page,
+      pageSize,
     },
     withCredentials: true,
   });
-  return res.data.tickets;
+  return res.data;
 }
 
 export default function TicketsPage() {
@@ -63,6 +77,8 @@ export default function TicketsPage() {
   const [category, setCategory] = useState<CategoryFilter>("ALL");
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<TicketPageSize>(10);
 
   useEffect(() => {
     const timeout = setTimeout(() => setSearch(searchInput.trim()), 300);
@@ -71,18 +87,28 @@ export default function TicketsPage() {
 
   const filters: TicketsFilters = { status, category, search };
 
-  const { data: tickets, isLoading, error } = useQuery({
-    queryKey: ["tickets", sorting, filters],
-    queryFn: () => fetchTickets(sorting, filters),
+  useEffect(() => {
+    setPage(1);
+  }, [sorting, status, category, search, pageSize]);
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["tickets", sorting, filters, page, pageSize],
+    queryFn: () => fetchTickets(sorting, filters, page, pageSize),
   });
 
+  const tickets = data?.tickets;
+  const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const rangeStart = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const rangeEnd = Math.min(page * pageSize, total);
+
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Tickets</h1>
+    <div className="flex h-full flex-col">
+      <div className="mb-3 flex flex-shrink-0 items-center justify-between">
+        <h1 className="text-xl font-semibold">Tickets</h1>
       </div>
 
-      <div className="mb-4 flex flex-wrap items-center gap-3">
+      <div className="mb-3 flex flex-shrink-0 flex-wrap items-center gap-3">
         <Select<StatusFilter> value={status} onValueChange={(value) => setStatus(value ?? "ALL")}>
           <SelectTrigger size="sm">
             <SelectValue placeholder="Status">
@@ -132,7 +158,58 @@ export default function TicketsPage() {
         <p className="text-sm text-muted-foreground">No tickets found.</p>
       )}
       {tickets && tickets.length > 0 && (
-        <TicketsTable tickets={tickets} sorting={sorting} onSortingChange={setSorting} />
+        <>
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            <TicketsTable tickets={tickets} sorting={sorting} onSortingChange={setSorting} />
+          </div>
+
+          <div className="mt-3 flex flex-shrink-0 items-center justify-between">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span>
+                Showing {rangeStart}-{rangeEnd} of {total}
+              </span>
+              <Select<TicketPageSize>
+                value={pageSize}
+                onValueChange={(value) => setPageSize(value ?? 10)}
+              >
+                <SelectTrigger size="sm">
+                  <SelectValue placeholder="Page size">
+                    {(value: TicketPageSize) => `${value} / page`}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {ticketPageSizes.map((size) => (
+                    <SelectItem key={size} value={size}>
+                      {size} / page
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                Previous
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

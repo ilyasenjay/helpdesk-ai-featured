@@ -83,7 +83,7 @@ export function TicketsTable({ tickets, sorting, onSortingChange }: TicketsTable
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id} className="border-b bg-muted/50">
               {headerGroup.headers.map((header) => (
-                <th key={header.id} className="px-4 py-3 text-left font-medium text-muted-foreground">
+                <th key={header.id} className="sticky top-0 z-10 bg-muted/50 px-4 py-2 text-left font-medium text-muted-foreground">
                   <button
                     type="button"
                     className="flex items-center gap-1 hover:text-foreground"
@@ -101,7 +101,7 @@ export function TicketsTable({ tickets, sorting, onSortingChange }: TicketsTable
           {rows.map((row, i) => (
             <tr key={row.id} className={i < rows.length - 1 ? "border-b" : ""}>
               {row.getVisibleCells().map((cell) => (
-                <td key={cell.id} className="px-4 py-3">
+                <td key={cell.id} className="px-4 py-2">
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </td>
               ))}

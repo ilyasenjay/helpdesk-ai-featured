@@ -36,3 +36,13 @@ export interface TicketDetail extends Ticket {
 export type TicketSortColumn = "subject" | "senderName" | "status" | "category" | "createdAt";
 
 export type TicketCategoryFilter = TicketCategory | "NONE";
+
+export const ticketPageSizes = [10, 20, 50, 100] as const;
+export type TicketPageSize = (typeof ticketPageSizes)[number];
+
+export interface TicketsPage {
+  tickets: Ticket[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
