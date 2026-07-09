@@ -12,11 +12,19 @@ import {
 } from "../components/ui/select";
 import { StatusBadge, categoryLabels, statusBadgeStyles } from "../components/TicketsTable";
 import { TicketStatus, statusLabels } from "../lib/ticket-status";
+import { TicketCategory } from "../lib/ticket-category";
 import { MessageSender } from "../lib/tickets";
 import type { Message, TicketAssignee, TicketDetail } from "../lib/tickets";
 
 const UNASSIGNED = "UNASSIGNED" as const;
 type AssigneeValue = string | typeof UNASSIGNED;
+
+type CategoryValue = TicketCategory | "NONE";
+
+const categoryValueLabels: Record<CategoryValue, string> = {
+  NONE: "Uncategorized",
+  ...categoryLabels,
+};
 
 const senderLabels: Record<MessageSender, string> = {
   [MessageSender.customer]: "Customer",
@@ -38,12 +46,16 @@ async function fetchAgents(): Promise<TicketAssignee[]> {
   return res.data.agents;
 }
 
-async function assignTicket(id: string, assignedToId: string | null): Promise<TicketDetail> {
-  const res = await axios.patch<{ ticket: TicketDetail }>(
-    `/api/tickets/${id}`,
-    { assignedToId },
-    { withCredentials: true },
-  );
+interface UpdateTicketInput {
+  status?: TicketStatus;
+  category?: TicketCategory | null;
+  assignedToId?: string | null;
+}
+
+async function updateTicket(id: string, input: UpdateTicketInput): Promise<TicketDetail> {
+  const res = await axios.patch<{ ticket: TicketDetail }>(`/api/tickets/${id}`, input, {
+    withCredentials: true,
+  });
   return res.data.ticket;
 }
 
@@ -79,8 +91,8 @@ export default function TicketDetailPage() {
     queryFn: fetchAgents,
   });
 
-  const assignMutation = useMutation({
-    mutationFn: (assignedToId: string | null) => assignTicket(id!, assignedToId),
+  const updateMutation = useMutation({
+    mutationFn: (input: UpdateTicketInput) => updateTicket(id!, input),
     onSuccess: (updated) => {
       queryClient.setQueryData<TicketDetail>(["ticket", id], (old) =>
         old ? { ...old, ...updated } : old,
@@ -117,8 +129,8 @@ export default function TicketDetailPage() {
         <StatusBadge status={ticket.status} />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="space-y-6">
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
@@ -189,7 +201,9 @@ export default function TicketDetailPage() {
                 <Select<AssigneeValue>
                   value={ticket.assignedTo?.id ?? UNASSIGNED}
                   onValueChange={(value) =>
-                    assignMutation.mutate(value === UNASSIGNED ? null : (value ?? null))
+                    updateMutation.mutate({
+                      assignedToId: value === UNASSIGNED ? null : (value ?? null),
+                    })
                   }
                 >
                   <SelectTrigger className="w-full" size="sm">
@@ -212,16 +226,55 @@ export default function TicketDetailPage() {
                 </Select>
               </div>
 
-              <div className="flex justify-between gap-3 text-sm">
-                <span className="text-muted-foreground">Status</span>
-                <span className="font-medium">{statusLabels[ticket.status]}</span>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                  Status
+                </label>
+                <Select<TicketStatus>
+                  value={ticket.status}
+                  onValueChange={(value) => value && updateMutation.mutate({ status: value })}
+                >
+                  <SelectTrigger className="w-full" size="sm">
+                    <SelectValue placeholder="Status">
+                      {(value: TicketStatus) => statusLabels[value]}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={TicketStatus.open}>Open</SelectItem>
+                    <SelectItem value={TicketStatus.resolved}>Resolved</SelectItem>
+                    <SelectItem value={TicketStatus.closed}>Closed</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
-              <div className="flex justify-between gap-3 text-sm">
-                <span className="text-muted-foreground">Category</span>
-                <span className="font-medium">
-                  {ticket.category ? categoryLabels[ticket.category] : "Uncategorized"}
-                </span>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                  Category
+                </label>
+                <Select<CategoryValue>
+                  value={ticket.category ?? "NONE"}
+                  onValueChange={(value) =>
+                    updateMutation.mutate({ category: value === "NONE" ? null : (value ?? null) })
+                  }
+                >
+                  <SelectTrigger className="w-full" size="sm">
+                    <SelectValue placeholder="Category">
+                      {(value: CategoryValue) => categoryValueLabels[value]}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={TicketCategory.generalQuestion}>
+                      {categoryLabels[TicketCategory.generalQuestion]}
+                    </SelectItem>
+                    <SelectItem value={TicketCategory.technicalQuestion}>
+                      {categoryLabels[TicketCategory.technicalQuestion]}
+                    </SelectItem>
+                    <SelectItem value={TicketCategory.refundRequest}>
+                      {categoryLabels[TicketCategory.refundRequest]}
+                    </SelectItem>
+                    <SelectItem value="NONE">Uncategorized</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-1 border-t pt-4 text-xs text-muted-foreground">
@@ -288,8 +341,8 @@ function TicketDetailSkeleton() {
         <div className="h-8 w-2/3 rounded bg-muted" />
         <div className={`h-6 w-16 rounded-full ${statusBadgeStyles[TicketStatus.open]}`} />
       </div>
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="space-y-6">
           <div className="h-32 rounded-xl bg-muted" />
           <div className="h-48 rounded-xl bg-muted" />
         </div>

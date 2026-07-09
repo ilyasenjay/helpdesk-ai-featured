@@ -9,7 +9,7 @@ import {
 import { Link } from "react-router-dom";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
-import { TicketStatus } from "../lib/ticket-status";
+import { TicketStatus, statusLabels } from "../lib/ticket-status";
 import { TicketCategory } from "../lib/ticket-category";
 import type { Ticket } from "../lib/tickets";
 
@@ -187,9 +187,9 @@ export const statusBadgeStyles: Record<TicketStatus, string> = {
 export function StatusBadge({ status }: { status: TicketStatus }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize ${statusBadgeStyles[status]}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeStyles[status]}`}
     >
-      {status}
+      {statusLabels[status]}
     </span>
   );
 }
