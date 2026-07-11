@@ -1,5 +1,6 @@
 import { Sparkles } from "lucide-react";
 import { formatDateTime } from "../../lib/format";
+import { sanitizeText } from "../../lib/sanitize";
 import { MessageSender } from "../../lib/tickets";
 import type { Message } from "../../lib/tickets";
 
@@ -30,7 +31,7 @@ export function MessageBubble({ message }: { message: Message }) {
           <span>·</span>
           <span>{formatDateTime(message.createdAt)}</span>
         </div>
-        <p className="whitespace-pre-wrap leading-relaxed">{message.body}</p>
+        <p className="whitespace-pre-wrap leading-relaxed">{sanitizeText(message.body)}</p>
       </div>
     </div>
   );

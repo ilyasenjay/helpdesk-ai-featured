@@ -8,6 +8,7 @@ import { AiSummaryCard } from "../components/ticket-detail/AiSummaryCard";
 import { ConversationCard } from "../components/ticket-detail/ConversationCard";
 import { TicketDetailsPanel } from "../components/ticket-detail/TicketDetailsPanel";
 import { TicketDetailSkeleton } from "../components/ticket-detail/TicketDetailSkeleton";
+import { sanitizeText } from "../lib/sanitize";
 import type { TicketAssignee, TicketDetail } from "../lib/tickets";
 
 async function fetchTicket(id: string): Promise<TicketDetail> {
@@ -61,7 +62,7 @@ export default function TicketDetailPage() {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="mb-1 text-xs text-muted-foreground">Ticket #{ticket.id}</div>
-          <h1 className="text-2xl font-semibold">{ticket.subject}</h1>
+          <h1 className="text-2xl font-semibold">{sanitizeText(ticket.subject)}</h1>
         </div>
         <span data-testid="ticket-status-badge">
           <StatusBadge status={ticket.status} />

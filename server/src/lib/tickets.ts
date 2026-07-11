@@ -2,11 +2,23 @@ import { z } from "zod";
 import { TicketStatus, TicketCategory } from "../generated/prisma/client";
 
 export const inboundEmailSchema = z.object({
-  from: z.email({ error: "Invalid email address" }),
+  from: z
+    .email({ error: "Invalid email address" })
+    .max(255, { error: "Email must be at most 255 characters" }),
   fromName: z.string().trim().min(1, { error: "Sender name is required" }),
-  subject: z.string().trim().min(1, { error: "Subject is required" }),
-  body: z.string().min(1, { error: "Body is required" }),
-  bodyHtml: z.string().optional(),
+  subject: z
+    .string()
+    .trim()
+    .min(1, { error: "Subject is required" })
+    .max(255, { error: "Subject must be at most 255 characters" }),
+  body: z
+    .string()
+    .min(1, { error: "Body is required" })
+    .max(1000, { error: "Body must be at most 1000 characters" }),
+  bodyHtml: z
+    .string()
+    .max(3000, { error: "Body HTML must be at most 3000 characters" })
+    .optional(),
 });
 
 export type InboundEmailInput = z.infer<typeof inboundEmailSchema>;
@@ -43,7 +55,15 @@ export const updateTicketSchema = z.object({
 });
 
 export const createMessageSchema = z.object({
-  body: z.string().trim().min(1, { error: "Reply cannot be empty" }),
+  body: z
+    .string()
+    .trim()
+    .min(1, { error: "Reply cannot be empty" })
+    .max(1000, { error: "Reply must be at most 1000 characters" }),
+  bodyHtml: z
+    .string()
+    .max(3000, { error: "Body HTML must be at most 3000 characters" })
+    .optional(),
 });
 
 export const ticketsQuerySchema = z.object({

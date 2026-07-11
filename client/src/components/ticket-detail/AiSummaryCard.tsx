@@ -1,5 +1,6 @@
 import { Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { sanitizeText } from "../../lib/sanitize";
 
 interface Props {
   summary: string;
@@ -15,7 +16,7 @@ export function AiSummaryCard({ summary }: Props) {
         </div>
       </CardHeader>
       <CardContent>
-        <p className="text-sm leading-relaxed">{summary}</p>
+        <p className="text-sm leading-relaxed">{sanitizeText(summary)}</p>
       </CardContent>
     </Card>
   );
