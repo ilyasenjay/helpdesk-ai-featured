@@ -5,9 +5,21 @@ import prisma from "../lib/db";
 import { requireWebhookSecret } from "../lib/requireWebhookSecret";
 import { inboundEmailSchema } from "../lib/tickets";
 import { enqueueTicketClassification, enqueueAutoResolveTicket } from "../lib/ai";
+import { AI_AGENT_EMAIL } from "../lib/ai/agent";
 import { MessageSender } from "../generated/prisma/client";
 
 const router = Router();
+
+let aiAgentIdPromise: Promise<string | null> | null = null;
+
+// Cached lookup — the AI agent's id never changes at runtime, so avoid a query on every inbound
+// email. Resolves to null (ticket left unassigned) if the seed script hasn't been run yet.
+function getAiAgentId(): Promise<string | null> {
+  aiAgentIdPromise ??= prisma.user
+    .findUnique({ where: { email: AI_AGENT_EMAIL }, select: { id: true } })
+    .then((user) => user?.id ?? null);
+  return aiAgentIdPromise;
+}
 
 const mailgunSchema = z.object({
   sender: z.email(),
@@ -48,10 +60,11 @@ router.post("/email", multer().none(), requireWebhookSecret, async (req, res) =>
   }
 
   const { from, fromName, subject, body } = parsed.data;
+  const aiAgentId = await getAiAgentId();
 
   const ticket = await prisma.$transaction(async (tx) => {
     const ticket = await tx.ticket.create({
-      data: { subject, body, customerEmail: from, senderName: fromName },
+      data: { subject, body, customerEmail: from, senderName: fromName, assignedToId: aiAgentId },
     });
     await tx.message.create({
       data: { body, sender: MessageSender.CUSTOMER, ticketId: ticket.id },

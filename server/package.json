@@ -10,6 +10,7 @@
     "db:generate": "bun node_modules/prisma/build/index.js generate",
     "db:studio": "bun node_modules/prisma/build/index.js studio",
     "db:seed": "bun src/seed.ts",
+    "db:seed:ai-agent": "bun src/seed-ai-agent.ts",
     "test": "bun test"
   },
   "devDependencies": {

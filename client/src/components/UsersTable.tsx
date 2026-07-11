@@ -1,6 +1,7 @@
 import { Pencil, Trash2 } from "lucide-react";
 import { Skeleton } from "./ui/skeleton";
 import { Role } from "../lib/roles";
+import { AI_AGENT_EMAIL } from "../lib/ai-agent";
 
 export type User = {
   id: string;
@@ -49,7 +50,7 @@ export function UsersTable({ users, onEdit, onDelete }: UsersTableProps) {
                   >
                     <Pencil size={15} />
                   </button>
-                  {user.role !== Role.admin && (
+                  {user.role !== Role.admin && user.email !== AI_AGENT_EMAIL && (
                     <button
                       aria-label={`Delete ${user.name}`}
                       onClick={() => onDelete(user)}

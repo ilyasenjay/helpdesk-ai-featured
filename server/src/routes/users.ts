@@ -5,6 +5,7 @@ import { requireAuth } from "../lib/requireAuth";
 import { requireAdmin } from "../lib/requireAdmin";
 import prisma from "../lib/db";
 import { Role } from "../generated/prisma/client";
+import { AI_AGENT_EMAIL } from "../lib/ai/agent";
 
 const router = Router();
 
@@ -98,6 +99,10 @@ router.delete("/:id", requireAuth, requireAdmin, async (req, res) => {
   }
   if (user.role === Role.admin) {
     res.status(403).json({ message: "Admin users cannot be deleted" });
+    return;
+  }
+  if (user.email === AI_AGENT_EMAIL) {
+    res.status(403).json({ message: "The AI agent cannot be deleted" });
     return;
   }
 

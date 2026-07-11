@@ -58,7 +58,10 @@ export async function attemptAutoResolveTicket(ticketId: number): Promise<void> 
   if (ticket.status !== TicketStatus.new && ticket.status !== TicketStatus.processing) return;
 
   if (!env.groqApiKey) {
-    await prisma.ticket.update({ where: { id: ticketId }, data: { status: TicketStatus.open } });
+    await prisma.ticket.update({
+      where: { id: ticketId },
+      data: { status: TicketStatus.open, assignedToId: null },
+    });
     return;
   }
 
@@ -84,7 +87,10 @@ export async function attemptAutoResolveTicket(ticketId: number): Promise<void> 
   const replyText = parseAutoResolveResponse(text);
 
   if (!replyText) {
-    await prisma.ticket.update({ where: { id: ticketId }, data: { status: TicketStatus.open } });
+    await prisma.ticket.update({
+      where: { id: ticketId },
+      data: { status: TicketStatus.open, assignedToId: null },
+    });
     return;
   }
 

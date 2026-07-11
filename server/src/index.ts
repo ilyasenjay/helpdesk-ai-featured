@@ -12,6 +12,7 @@ import { startTicketClassificationWorker, startAutoResolveWorker } from "./lib/a
 import usersRouter from "./routes/users";
 import ticketsRouter from "./routes/tickets";
 import webhooksRouter from "./routes/webhooks";
+import dashboardRouter from "./routes/dashboard";
 
 const app = express();
 
@@ -45,6 +46,7 @@ app.get("/api/me", requireAuth, (req, res) => {
 
 app.use("/api/users", usersRouter);
 app.use("/api/tickets", ticketsRouter);
+app.use("/api/dashboard", dashboardRouter);
 
 await startQueue();
 await startTicketClassificationWorker();
