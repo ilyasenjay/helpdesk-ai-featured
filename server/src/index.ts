@@ -8,7 +8,7 @@ import { auth } from "./lib/auth";
 import { requireAuth } from "./lib/requireAuth";
 import { env } from "./lib/env";
 import { startQueue } from "./lib/queue";
-import { startTicketClassificationWorker } from "./lib/ai";
+import { startTicketClassificationWorker, startAutoResolveWorker } from "./lib/ai";
 import usersRouter from "./routes/users";
 import ticketsRouter from "./routes/tickets";
 import webhooksRouter from "./routes/webhooks";
@@ -48,6 +48,7 @@ app.use("/api/tickets", ticketsRouter);
 
 await startQueue();
 await startTicketClassificationWorker();
+await startAutoResolveWorker();
 
 app.listen(env.port, () => {
   console.log(`Server running on http://localhost:${env.port}`);

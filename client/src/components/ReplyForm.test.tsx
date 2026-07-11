@@ -25,6 +25,7 @@ const seedTicket: TicketDetail = {
   updatedAt: "2026-01-01T00:00:00.000Z",
   body: "I can't log in to my account.",
   aiSummary: null,
+  resolvedByAi: false,
   messages: [
     {
       id: "msg-1",

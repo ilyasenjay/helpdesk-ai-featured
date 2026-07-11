@@ -6,6 +6,8 @@
       "name": "helpdesk",
       "devDependencies": {
         "@playwright/test": "^1.61.1",
+        "@types/pg": "^8.20.0",
+        "pg": "^8.22.0",
       },
     },
     "client": {

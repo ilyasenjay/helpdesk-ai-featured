@@ -45,6 +45,8 @@ interface Props {
 export function TicketDetailsPanel({ ticket, agents }: Props) {
   const queryClient = useQueryClient();
   const id = ticket.id.toString();
+  const isAiProcessing =
+    ticket.status === TicketStatus.new || ticket.status === TicketStatus.processing;
 
   const updateMutation = useMutation({
     mutationFn: (input: UpdateTicketInput) => updateTicket(id, input),
@@ -94,21 +96,25 @@ export function TicketDetailsPanel({ ticket, agents }: Props) {
 
         <div>
           <label className="field-label">Status</label>
-          <Select<TicketStatus>
-            value={ticket.status}
-            onValueChange={(value) => value && updateMutation.mutate({ status: value })}
-          >
-            <SelectTrigger className="w-full" size="sm" data-testid="status-select">
-              <SelectValue placeholder="Status">
-                {(value: TicketStatus) => statusLabels[value]}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={TicketStatus.open}>Open</SelectItem>
-              <SelectItem value={TicketStatus.resolved}>Resolved</SelectItem>
-              <SelectItem value={TicketStatus.closed}>Closed</SelectItem>
-            </SelectContent>
-          </Select>
+          {isAiProcessing ? (
+            <p className="text-sm text-muted-foreground">AI is trying to resolve this ticket…</p>
+          ) : (
+            <Select<TicketStatus>
+              value={ticket.status}
+              onValueChange={(value) => value && updateMutation.mutate({ status: value })}
+            >
+              <SelectTrigger className="w-full" size="sm" data-testid="status-select">
+                <SelectValue placeholder="Status">
+                  {(value: TicketStatus) => statusLabels[value]}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={TicketStatus.open}>Open</SelectItem>
+                <SelectItem value={TicketStatus.resolved}>Resolved</SelectItem>
+                <SelectItem value={TicketStatus.closed}>Closed</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
         </div>
 
         <div>

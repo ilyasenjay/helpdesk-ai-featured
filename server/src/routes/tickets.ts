@@ -4,7 +4,7 @@ import { generateText } from "ai";
 import { groq } from "@ai-sdk/groq";
 import { requireAuth } from "../lib/requireAuth";
 import prisma from "../lib/db";
-import { MessageSender, type Prisma } from "../generated/prisma/client";
+import { MessageSender, TicketStatus, type Prisma } from "../generated/prisma/client";
 import {
   createMessageSchema,
   polishReplySchema,
@@ -41,6 +41,10 @@ router.get("/", requireAuth, async (req, res) => {
   const { sortBy, sortOrder, status, category, search, page, pageSize } = parsed.data;
 
   const where: Prisma.TicketWhereInput = {
+    // While the AI is still working a ticket (new/processing) there's nothing for an agent to
+    // act on yet — keep it off the list until it settles into open (needs an agent) or resolved
+    // (AI handled it). It's still reachable by direct link in the meantime.
+    status: { notIn: [TicketStatus.new, TicketStatus.processing] },
     ...(status && { status }),
     ...(category === "NONE" ? { category: null } : category ? { category } : {}),
     ...(search && { subject: { contains: search, mode: "insensitive" } }),

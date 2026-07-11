@@ -4,7 +4,7 @@ import { z } from "zod";
 import prisma from "../lib/db";
 import { requireWebhookSecret } from "../lib/requireWebhookSecret";
 import { inboundEmailSchema } from "../lib/tickets";
-import { enqueueTicketClassification } from "../lib/ai";
+import { enqueueTicketClassification, enqueueAutoResolveTicket } from "../lib/ai";
 import { MessageSender } from "../generated/prisma/client";
 
 const router = Router();
@@ -59,9 +59,10 @@ router.post("/email", multer().none(), requireWebhookSecret, async (req, res) =>
     return ticket;
   });
 
-  // Non-blocking: enqueues the classification job via pg-boss and returns immediately, so
-  // the webhook responds without waiting on the AI call.
+  // Non-blocking: enqueues the classification and auto-resolve jobs via pg-boss and returns
+  // immediately, so the webhook responds without waiting on either AI call.
   void enqueueTicketClassification(ticket.id);
+  void enqueueAutoResolveTicket(ticket.id);
 
   res.status(200).json({ ok: true });
 });

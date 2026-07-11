@@ -1,7 +1,7 @@
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Sparkles } from "lucide-react";
 import { StatusBadge } from "../components/TicketsTable";
 import { TicketMessageCard } from "../components/ticket-detail/TicketMessageCard";
 import { AiSummaryCard } from "../components/ticket-detail/AiSummaryCard";
@@ -65,9 +65,19 @@ export default function TicketDetailPage() {
           <div className="mb-1 text-xs text-muted-foreground">Ticket #{ticket.id}</div>
           <h1 className="text-2xl font-semibold">{sanitizeText(ticket.subject)}</h1>
         </div>
-        <span data-testid="ticket-status-badge">
-          <StatusBadge status={ticket.status} />
-        </span>
+        <div className="flex items-center gap-2">
+          <span data-testid="ticket-status-badge">
+            <StatusBadge status={ticket.status} />
+          </span>
+          {ticket.resolvedByAi && (
+            <span
+              data-testid="ticket-resolved-by-ai-badge"
+              className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium ring-1 ring-primary/20"
+            >
+              <Sparkles size={11} /> Resolved by AI
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[3fr_1fr]">

@@ -10,6 +10,8 @@
     "test:e2e:ui": "~/.nvm/versions/node/v22.22.3/bin/node node_modules/.bin/playwright test --ui"
   },
   "devDependencies": {
-    "@playwright/test": "^1.61.1"
+    "@playwright/test": "^1.61.1",
+    "@types/pg": "^8.20.0",
+    "pg": "^8.22.0"
   }
 }

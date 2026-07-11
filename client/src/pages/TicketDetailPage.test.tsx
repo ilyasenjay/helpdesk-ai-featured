@@ -25,6 +25,7 @@ function makeTicket(overrides: Partial<TicketDetail> = {}): TicketDetail {
     updatedAt: "2026-01-02T10:00:00.000Z",
     body: "I can't log in to my account.",
     aiSummary: null,
+    resolvedByAi: false,
     messages: [
       {
         id: "msg-1",

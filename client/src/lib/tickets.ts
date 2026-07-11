@@ -41,6 +41,7 @@ export interface NewMessageInput {
 export interface TicketDetail extends Ticket {
   body: string;
   aiSummary: string | null;
+  resolvedByAi: boolean;
   messages: Message[];
 }
 

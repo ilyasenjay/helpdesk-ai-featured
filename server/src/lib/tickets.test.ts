@@ -51,6 +51,11 @@ describe("updateTicketSchema — status and category", () => {
     expect(result.success).toBe(false);
   });
 
+  test("rejects the AI-internal new/processing statuses — agents can't set them manually", () => {
+    expect(updateTicketSchema.safeParse({ status: "new" }).success).toBe(false);
+    expect(updateTicketSchema.safeParse({ status: "processing" }).success).toBe(false);
+  });
+
   test("accepts a valid category", () => {
     const result = updateTicketSchema.safeParse({ category: "REFUND_REQUEST" });
     expect(result.success).toBe(true);

@@ -108,7 +108,7 @@ export default function TicketsPage() {
 
       <div className="mb-3 flex flex-shrink-0 flex-wrap items-center gap-3">
         <Select<StatusFilter> value={status} onValueChange={(value) => setStatus(value ?? "ALL")}>
-          <SelectTrigger size="sm">
+          <SelectTrigger size="sm" data-testid="status-filter-select">
             <SelectValue placeholder="Status">
               {(value: StatusFilter) => statusFilterLabels[value]}
             </SelectValue>

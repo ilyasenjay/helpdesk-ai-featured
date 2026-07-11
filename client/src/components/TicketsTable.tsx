@@ -179,6 +179,8 @@ export const categoryLabels: Record<TicketCategory, string> = {
 };
 
 export const statusBadgeStyles: Record<TicketStatus, string> = {
+  [TicketStatus.new]: "bg-blue-100 text-blue-700",
+  [TicketStatus.processing]: "bg-amber-100 text-amber-700",
   [TicketStatus.open]: "bg-primary/10 text-primary",
   [TicketStatus.resolved]: "bg-green-100 text-green-700",
   [TicketStatus.closed]: "bg-muted text-muted-foreground",

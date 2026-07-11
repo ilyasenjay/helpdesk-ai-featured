@@ -14,3 +14,10 @@ export {
   enqueueTicketClassification,
   startTicketClassificationWorker,
 } from "./ai/classify";
+export {
+  attemptAutoResolveTicket,
+  buildAutoResolvePrompt,
+  parseAutoResolveResponse,
+  enqueueAutoResolveTicket,
+  startAutoResolveWorker,
+} from "./ai/resolve";
