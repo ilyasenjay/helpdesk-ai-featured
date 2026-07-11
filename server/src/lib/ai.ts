@@ -11,4 +11,6 @@ export {
   classifyTicketCategory,
   buildTicketCategoryPrompt,
   parseTicketCategoryResponse,
+  enqueueTicketClassification,
+  startTicketClassificationWorker,
 } from "./ai/classify";
