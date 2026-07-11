@@ -34,6 +34,10 @@ export interface Ticket {
   updatedAt: string;
 }
 
+export interface NewMessageInput {
+  body: string;
+}
+
 export interface TicketDetail extends Ticket {
   body: string;
   aiSummary: string | null;

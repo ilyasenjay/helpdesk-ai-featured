@@ -96,11 +96,11 @@ export function TicketsTable({ tickets, sorting, onSortingChange }: TicketsTable
   const rows = table.getRowModel().rows;
 
   return (
-    <div className="rounded-md border">
+    <div className="table-wrapper">
       <table className="w-full text-sm">
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id} className="border-b bg-muted/50">
+            <tr key={headerGroup.id} className="table-header-row">
               {headerGroup.headers.map((header) => (
                 <th key={header.id} className="sticky top-0 z-10 bg-muted/50 px-4 py-2 text-left font-medium text-muted-foreground">
                   {header.column.getCanSort() ? (
@@ -144,12 +144,12 @@ function SortIcon({ direction }: { direction: false | "asc" | "desc" }) {
 
 export function TicketsTableSkeleton() {
   return (
-    <div className="rounded-md border">
+    <div className="table-wrapper">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b bg-muted/50">
+          <tr className="table-header-row">
             {["Subject", "From", "Status", "Category", "Created", "Assigned to"].map((col) => (
-              <th key={col} className="px-4 py-3 text-left font-medium text-muted-foreground">
+              <th key={col} className="table-header-cell">
                 {col}
               </th>
             ))}
@@ -158,12 +158,12 @@ export function TicketsTableSkeleton() {
         <tbody>
           {Array.from({ length: 5 }).map((_, i) => (
             <tr key={i} className={i < 4 ? "border-b" : ""}>
-              <td className="px-4 py-3"><Skeleton className="h-4 w-48" /></td>
-              <td className="px-4 py-3"><Skeleton className="h-4 w-32" /></td>
-              <td className="px-4 py-3"><Skeleton className="h-5 w-16 rounded-full" /></td>
-              <td className="px-4 py-3"><Skeleton className="h-4 w-28" /></td>
-              <td className="px-4 py-3"><Skeleton className="h-4 w-32" /></td>
-              <td className="px-4 py-3"><Skeleton className="h-4 w-24" /></td>
+              <td className="table-cell"><Skeleton className="h-4 w-48" /></td>
+              <td className="table-cell"><Skeleton className="h-4 w-32" /></td>
+              <td className="table-cell"><Skeleton className="h-5 w-16 rounded-full" /></td>
+              <td className="table-cell"><Skeleton className="h-4 w-28" /></td>
+              <td className="table-cell"><Skeleton className="h-4 w-32" /></td>
+              <td className="table-cell"><Skeleton className="h-4 w-24" /></td>
             </tr>
           ))}
         </tbody>

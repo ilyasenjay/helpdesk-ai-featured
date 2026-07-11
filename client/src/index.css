@@ -135,3 +135,41 @@
     transition: background-color 5000s ease-in-out 0s;
     }
 }
+
+@layer components {
+  .field-label {
+    @apply mb-1.5 block text-xs font-medium text-muted-foreground;
+    }
+  .field-error {
+    @apply text-xs text-destructive;
+    }
+  .icon-button {
+    @apply text-muted-foreground transition-colors hover:text-foreground;
+    }
+
+  .table-wrapper {
+    @apply rounded-md border;
+    }
+  .table-header-row {
+    @apply border-b bg-muted/50;
+    }
+  .table-header-cell {
+    @apply px-4 py-3 text-left font-medium text-muted-foreground;
+    }
+  .table-cell {
+    @apply px-4 py-3;
+    }
+
+  .modal-overlay {
+    @apply fixed inset-0 z-50 flex items-center justify-center;
+    }
+  .modal-backdrop {
+    @apply absolute inset-0 bg-black/50;
+    }
+  .modal-panel {
+    @apply relative z-10 w-full rounded-lg border bg-background p-6 shadow-lg;
+    }
+  .modal-header {
+    @apply mb-5 flex items-center justify-between;
+    }
+}

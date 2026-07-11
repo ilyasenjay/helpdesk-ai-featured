@@ -87,3 +87,18 @@ metadata:
 ## type="email" bypass pattern
 
 When a form input has `type="email"` and contains a non-email string, Chromium blocks native form submission with a browser tooltip. Use `submitFormBypassingBrowserValidation(page)` from `e2e/helpers/auth.ts` to dispatch a raw submit event so react-hook-form/Zod validation runs instead.
+
+## base-ui Select (`client/src/components/ui/select.tsx`) — used by TicketsPage filters and TicketDetailsPanel
+
+- `SelectTrigger` renders `role="combobox"`. `SelectContent`'s list renders `role="listbox"`, each `SelectItem` renders `role="option"`.
+- The trigger has **no** `aria-label`/`aria-labelledby` linking it to the adjacent `<label className="field-label">` (no `htmlFor`/`id` pairing) — `getByLabel()` does not work. Its accessible name is just the current displayed value text, which changes as the user interacts, so `getByRole("combobox", { name: ... })` is unreliable for the *initial* state.
+- **Fix**: add `data-testid` directly to `SelectTrigger` in the source component and select via `page.getByTestId(id).click()` then `page.getByRole("option", { name: ..., exact: true }).click()`. Only one popup is open at a time, so `getByRole("option", ...)` needs no extra scoping. Applied to `TicketDetailsPanel.tsx`: testids `assigned-to-select`, `status-select`, `category-select`.
+- **Gotcha**: the trigger's `textContent` includes the chevron icon's fallback glyph appended after the value (observed as `"Unassigned▼"`). Assert with `toContainText(...)`, not `toHaveText(...)`, on the trigger element.
+
+## TicketDetailPage (`/tickets/:id`) selectors
+
+- Header status badge: wrapped in `<span data-testid="ticket-status-badge">` around `StatusBadge` in `TicketDetailPage.tsx` (added for e2e — `StatusBadge` is also reused inside `TicketsTable`, and the same status word appears a second time inside the Status select's trigger on this page, so bare text is ambiguous).
+- Conversation message bubbles: `MessageBubble.tsx` has `data-testid="message-bubble"` on its root div (added for e2e) — use `.toHaveCount(n)` to verify a reply was/wasn't added, since "No replies yet." is unreachable for webhook-created fixtures (see [[project_ticket_fixtures]]).
+- Reply textarea: `page.getByLabel("Reply")` (aria-label="Reply" on the `Textarea`). Submit button: `page.getByRole("button", { name: "Send Reply" })`.
+- "Back to tickets" link: `page.getByRole("link", { name: /back to tickets/i })`.
+- Card section titles ("Conversation", "Details", "AI Summary") are `CardTitle` `div`s, not headings — use `getByText`, matching the general CardTitle note above.

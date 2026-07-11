@@ -57,7 +57,7 @@ export default function Login() {
                 {...register("email")}
               />
               {errors.email && (
-                <p className="text-xs text-destructive">{errors.email.message}</p>
+                <p className="field-error">{errors.email.message}</p>
               )}
             </div>
 
@@ -71,7 +71,7 @@ export default function Login() {
                 {...register("password")}
               />
               {errors.password && (
-                <p className="text-xs text-destructive">{errors.password.message}</p>
+                <p className="field-error">{errors.password.message}</p>
               )}
             </div>
 

@@ -2,8 +2,8 @@ import { Router } from "express";
 import { z } from "zod";
 import { requireAuth } from "../lib/requireAuth";
 import prisma from "../lib/db";
-import type { Prisma } from "../generated/prisma/client";
-import { ticketsQuerySchema, updateTicketSchema } from "../lib/tickets";
+import { MessageSender, type Prisma } from "../generated/prisma/client";
+import { createMessageSchema, ticketsQuerySchema, updateTicketSchema } from "../lib/tickets";
 
 const router = Router();
 
@@ -91,6 +91,31 @@ router.patch("/:id", requireAuth, async (req, res) => {
     select: ticketSelect,
   });
   res.json({ ticket });
+});
+
+router.post("/:id/messages", requireAuth, async (req, res) => {
+  const id = Number(req.params.id as string);
+  const parsed = createMessageSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ message: firstError(parsed) });
+    return;
+  }
+
+  const ticket = await prisma.ticket.findUnique({ where: { id }, select: { id: true } });
+  if (!ticket) {
+    res.status(404).json({ message: "Ticket not found" });
+    return;
+  }
+
+  const message = await prisma.message.create({
+    data: {
+      body: parsed.data.body,
+      sender: MessageSender.AGENT,
+      ticketId: id,
+      userId: req.user!.id,
+    },
+  });
+  res.status(201).json({ message });
 });
 
 export default router;

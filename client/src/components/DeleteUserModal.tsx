@@ -25,13 +25,13 @@ export function DeleteUserModal({ user, onClose }: Props) {
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="modal-overlay">
       <div
         data-testid="delete-modal-overlay"
-        className="absolute inset-0 bg-black/50"
+        className="modal-backdrop"
         onClick={onClose}
       />
-      <div className="relative z-10 w-full max-w-sm bg-background rounded-lg border shadow-lg p-6">
+      <div className="modal-panel max-w-sm">
         <div className="flex items-start justify-between mb-4">
           <h2 className="text-lg font-semibold">Delete User</h2>
           <button type="button" aria-label="Close" onClick={onClose}>
@@ -48,7 +48,7 @@ export function DeleteUserModal({ user, onClose }: Props) {
         </p>
 
         {mutation.isError && (
-          <p className="text-xs text-destructive mb-4">
+          <p className="field-error mb-4">
             {axios.isAxiosError(mutation.error)
               ? mutation.error.response?.data?.message ?? mutation.error.message
               : "Something went wrong"}

@@ -78,6 +78,21 @@ Confirmed working in `create-user.spec.ts` (agent-cannot-POST test) and `user-ma
 
 For fully API-only specs (no `page`, e.g. `email-webhook.spec.ts`), see [[project_api_only_endpoints]] for the full pattern (multipart requests, asserting via read endpoints instead of a raw DB client).
 
+## Dev servers block Playwright's webServer
+
+`reuseExistingServer: false` on both webServer entries (backend :3000, frontend :5173) means `bun run test:e2e` fails immediately with `Error: http://localhost:3000 is already used...` if the user's own dev servers (`bun run dev:server`, `cd client && vite`) are already running on those ports — it does not wait or queue.
+
+Before running the suite, check `lsof -i :3000 -i :5173` for LISTEN entries and inspect `/proc/<pid>/cwd` (dev processes have cwd `server/` or `client/`). If found, `kill` them, run the tests, then **restart them afterward** so the user's dev environment is unaffected:
+```sh
+nohup bash -c 'cd /path/to/repo && bun run dev:server' > /tmp/dev-server.log 2>&1 & disown
+nohup bash -c 'cd /path/to/repo/client && PATH=~/.nvm/versions/node/v22.22.3/bin:$PATH node_modules/.bin/vite' > /tmp/dev-client.log 2>&1 & disown
+```
+Gotcha: backgrounding a compound `cd x && cmd &` runs the `cd` in a forked subshell — it does **not** persist to the outer shell's cwd for later lines in the same multi-line Bash call. Wrap the whole `cd ... && cmd` inside `bash -c '...'` when backgrounding rather than relying on a bare `cd` earlier in the script.
+
+## App-wide QueryClient has no `retry: false` — error-state assertions need a longer timeout
+
+`client/src/main.tsx` creates `new QueryClient()` with **no** custom `defaultOptions` — unlike Vitest's `renderWithQuery.tsx`, which explicitly passes `{ queries: { retry: false } }`. In the real browser, a failing query — including a clean 404 — retries 3 times with TanStack Query's default exponential backoff (~1s+2s+4s ≈ 7s) before the error UI renders. The default `expect(...).toBeVisible()` 5s timeout is too tight for asserting error/not-found states reached via a real failed fetch (e.g. TicketDetailPage's "Ticket not found."); bump to `{ timeout: 15_000 }` for those specific assertions instead of treating it as flakiness.
+
 ## Known bug (not fixed, out of scope when found)
 
 `create-user.spec.ts` line ~50: `page.getByRole("cell", { name: "Jane Smith" })` is missing `{ exact: true }`, causing a strict-mode violation against the row-actions cell (whose accessible name is `"Edit Jane Smith Delete Jane…"`). Every other spec in the suite (`user-management.spec.ts`) correctly uses `exact: true` for this. Noticed while running the full suite on 2026-07-08; not fixed since it was unrelated to the task at hand — fix it if asked to touch that file.

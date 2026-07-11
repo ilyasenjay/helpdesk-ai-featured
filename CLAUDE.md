@@ -60,6 +60,13 @@ Always use context7 to fetch up-to-date documentation for any library, framework
   - Use `queryKey` arrays that match the resource, e.g. `["users"]`, `["tickets"]`
   - Never use `useEffect` + `useState` for data fetching — always reach for `useQuery`
 
+## Forms (Client)
+
+- All mutation forms use `react-hook-form` + `zodResolver`, following the pattern in `NewUserForm.tsx` / `EditUserForm.tsx` / `ReplyForm.tsx`
+- On mutation failure, extract the error message with `getErrorMessage(err)` (`client/src/lib/errors.ts`) and set it via `setError("root", { message: getErrorMessage(err) })` — don't inline the `axios.isAxiosError` check per-form
+- Render the root-level mutation error with `<FormRootError message={errors.root?.message} />` (`client/src/components/FormRootError.tsx`) — it renders `data-testid="form-root-error"`, which tests assert on, so don't hand-roll the `<p>` markup in new forms
+- Login (`Login.tsx`) is the one exception — it calls `authClient` directly (not an axios mutation) and renders the error in an `Alert`, so it doesn't use `getErrorMessage`/`FormRootError`
+
 ## shadcn/ui
 
 - Components live in `client/src/components/ui/`
@@ -68,6 +75,7 @@ Always use context7 to fetch up-to-date documentation for any library, framework
   PATH=~/.nvm/versions/node/v22.22.3/bin:$PATH npx shadcn@latest add <component>
   ```
 - The `base-nova` style generates `Input` using `@base-ui/react/input` which does **not** forward refs — this breaks react-hook-form. Always use a native `<input>` with `React.forwardRef` instead (see `client/src/components/ui/input.tsx`).
+- Even non-Base-UI primitives can have the same problem: the generated `Textarea` was a plain function component (no `forwardRef`) around a native `<textarea>` — on React 18 that still breaks `register()`'s ref binding. Wrap any newly-added form-facing shadcn component in `React.forwardRef` before wiring it to react-hook-form; don't assume it's only an `Input` issue.
 
 ## Component Testing (Vitest + React Testing Library)
 

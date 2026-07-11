@@ -6,6 +6,8 @@ import axios from "axios";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { FormRootError } from "./FormRootError";
+import { getErrorMessage } from "../lib/errors";
 
 const schema = z.object({
   name: z.string().min(3, { error: "Name must be at least 3 characters" }),
@@ -42,10 +44,7 @@ export function NewUserForm({ onSuccess, onCancel }: Props) {
       onSuccess();
     },
     onError: (err) => {
-      const message = axios.isAxiosError(err)
-        ? err.response?.data?.message ?? err.message
-        : "Something went wrong";
-      setError("root", { message });
+      setError("root", { message: getErrorMessage(err) });
     },
   });
 
@@ -64,7 +63,7 @@ export function NewUserForm({ onSuccess, onCancel }: Props) {
           placeholder="Jane Smith"
         />
         {errors.name && (
-          <p className="text-xs text-destructive">{errors.name.message}</p>
+          <p className="field-error">{errors.name.message}</p>
         )}
       </div>
 
@@ -79,7 +78,7 @@ export function NewUserForm({ onSuccess, onCancel }: Props) {
           placeholder="jane@example.com"
         />
         {errors.email && (
-          <p className="text-xs text-destructive">{errors.email.message}</p>
+          <p className="field-error">{errors.email.message}</p>
         )}
       </div>
 
@@ -94,13 +93,11 @@ export function NewUserForm({ onSuccess, onCancel }: Props) {
           placeholder="••••••••"
         />
         {errors.password && (
-          <p className="text-xs text-destructive">{errors.password.message}</p>
+          <p className="field-error">{errors.password.message}</p>
         )}
       </div>
 
-      {errors.root && (
-        <p data-testid="form-root-error" className="text-xs text-destructive">{errors.root.message}</p>
-      )}
+      <FormRootError message={errors.root?.message} />
 
       <div className="flex justify-end gap-2 pt-2">
         <Button type="button" variant="outline" onClick={onCancel}>

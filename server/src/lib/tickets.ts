@@ -42,6 +42,10 @@ export const updateTicketSchema = z.object({
   assignedToId: z.string().min(1, { error: "Invalid assignedToId" }).nullable().optional(),
 });
 
+export const createMessageSchema = z.object({
+  body: z.string().trim().min(1, { error: "Reply cannot be empty" }),
+});
+
 export const ticketsQuerySchema = z.object({
   sortBy: z.enum(ticketSortColumns, { error: "Invalid sortBy value" }).default("createdAt"),
   sortOrder: z.enum(["asc", "desc"], { error: "Invalid sortOrder value" }).default("desc"),

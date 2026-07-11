@@ -18,34 +18,34 @@ interface UsersTableProps {
 
 export function UsersTable({ users, onEdit, onDelete }: UsersTableProps) {
   return (
-    <div className="rounded-md border">
+    <div className="table-wrapper">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b bg-muted/50">
-            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Name</th>
-            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Email</th>
-            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Role</th>
-            <th className="px-4 py-3 text-left font-medium text-muted-foreground">Joined</th>
-            <th className="px-4 py-3" />
+          <tr className="table-header-row">
+            <th className="table-header-cell">Name</th>
+            <th className="table-header-cell">Email</th>
+            <th className="table-header-cell">Role</th>
+            <th className="table-header-cell">Joined</th>
+            <th className="table-cell" />
           </tr>
         </thead>
         <tbody>
           {users.map((user, i) => (
             <tr key={user.id} className={i < users.length - 1 ? "border-b" : ""}>
-              <td className="px-4 py-3">{user.name}</td>
-              <td className="px-4 py-3 text-muted-foreground">{user.email}</td>
-              <td className="px-4 py-3">
+              <td className="table-cell">{user.name}</td>
+              <td className="table-cell text-muted-foreground">{user.email}</td>
+              <td className="table-cell">
                 <RoleBadge role={user.role} />
               </td>
-              <td className="px-4 py-3 text-muted-foreground">
+              <td className="table-cell text-muted-foreground">
                 {new Date(user.createdAt).toLocaleDateString()}
               </td>
-              <td className="px-4 py-3 text-right">
+              <td className="table-cell text-right">
                 <div className="flex items-center justify-end gap-2">
                   <button
                     aria-label={`Edit ${user.name}`}
                     onClick={() => onEdit(user)}
-                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    className="icon-button"
                   >
                     <Pencil size={15} />
                   </button>
@@ -70,12 +70,12 @@ export function UsersTable({ users, onEdit, onDelete }: UsersTableProps) {
 
 export function UsersTableSkeleton() {
   return (
-    <div className="rounded-md border">
+    <div className="table-wrapper">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b bg-muted/50">
+          <tr className="table-header-row">
             {["Name", "Email", "Role", "Joined", ""].map((col) => (
-              <th key={col} className="px-4 py-3 text-left font-medium text-muted-foreground">
+              <th key={col} className="table-header-cell">
                 {col}
               </th>
             ))}
@@ -84,11 +84,11 @@ export function UsersTableSkeleton() {
         <tbody>
           {Array.from({ length: 5 }).map((_, i) => (
             <tr key={i} className={i < 4 ? "border-b" : ""}>
-              <td className="px-4 py-3"><Skeleton className="h-4 w-32" /></td>
-              <td className="px-4 py-3"><Skeleton className="h-4 w-48" /></td>
-              <td className="px-4 py-3"><Skeleton className="h-5 w-14 rounded-full" /></td>
-              <td className="px-4 py-3"><Skeleton className="h-4 w-24" /></td>
-              <td className="px-4 py-3"><Skeleton className="h-4 w-4" /></td>
+              <td className="table-cell"><Skeleton className="h-4 w-32" /></td>
+              <td className="table-cell"><Skeleton className="h-4 w-48" /></td>
+              <td className="table-cell"><Skeleton className="h-5 w-14 rounded-full" /></td>
+              <td className="table-cell"><Skeleton className="h-4 w-24" /></td>
+              <td className="table-cell"><Skeleton className="h-4 w-4" /></td>
             </tr>
           ))}
         </tbody>
