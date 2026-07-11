@@ -1,9 +1,18 @@
 import { Router } from "express";
 import { z } from "zod";
+import { generateText } from "ai";
+import { groq } from "@ai-sdk/groq";
 import { requireAuth } from "../lib/requireAuth";
 import prisma from "../lib/db";
 import { MessageSender, type Prisma } from "../generated/prisma/client";
-import { createMessageSchema, ticketsQuerySchema, updateTicketSchema } from "../lib/tickets";
+import {
+  createMessageSchema,
+  polishReplySchema,
+  ticketsQuerySchema,
+  updateTicketSchema,
+} from "../lib/tickets";
+import { classifyAiError, POLISH_MODEL_ID } from "../lib/ai";
+import { env } from "../lib/env";
 
 const router = Router();
 
@@ -91,6 +100,51 @@ router.patch("/:id", requireAuth, async (req, res) => {
     select: ticketSelect,
   });
   res.json({ ticket });
+});
+
+router.post("/:id/polish", requireAuth, async (req, res) => {
+  const parsed = polishReplySchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ message: firstError(parsed) });
+    return;
+  }
+
+  if (!env.groqApiKey) {
+    res.status(503).json({
+      code: "ai_not_configured",
+      message: "AI polish isn't configured on this server. Add GROQ_API_KEY to enable it.",
+    });
+    return;
+  }
+
+  const id = Number(req.params.id as string);
+  const ticket = await prisma.ticket.findUnique({
+    where: { id },
+    select: { subject: true, body: true, senderName: true },
+  });
+  if (!ticket) {
+    res.status(404).json({ message: "Ticket not found" });
+    return;
+  }
+
+  try {
+    const { text } = await generateText({
+      model: groq(POLISH_MODEL_ID),
+      system:
+        "You are a helpdesk assistant that polishes a support agent's draft reply before it is sent to a customer. " +
+        "Improve grammar, clarity, and professional tone while preserving the original meaning and any specific " +
+        "facts, numbers, or commitments. Reply with only the improved text — no preamble, quotes, or explanation. " +
+        "Do not add a greeting/salutation (e.g. \"Hi [Name],\") or a sign-off/signature (e.g. \"Best regards, [Your Name]\") " +
+        "— both are added automatically.",
+      prompt: `Customer's ticket subject: ${ticket.subject}\n\nCustomer's original message: ${ticket.body}\n\nAgent's draft reply:\n${parsed.data.body}`,
+    });
+    const greeting = `Hi ${ticket.senderName},`;
+    const signature = `Best regards,\n${req.user!.name}\n${req.user!.email}`;
+    res.json({ body: `${greeting}\n\n${text.trim()}\n\n${signature}` });
+  } catch (err) {
+    const { status, code, message } = classifyAiError(err);
+    res.status(status).json({ code, message });
+  }
 });
 
 router.post("/:id/messages", requireAuth, async (req, res) => {

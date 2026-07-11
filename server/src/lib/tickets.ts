@@ -66,6 +66,14 @@ export const createMessageSchema = z.object({
     .optional(),
 });
 
+export const polishReplySchema = z.object({
+  body: z
+    .string()
+    .trim()
+    .min(1, { error: "Reply cannot be empty" })
+    .max(1000, { error: "Reply must be at most 1000 characters" }),
+});
+
 export const ticketsQuerySchema = z.object({
   sortBy: z.enum(ticketSortColumns, { error: "Invalid sortBy value" }).default("createdAt"),
   sortOrder: z.enum(["asc", "desc"], { error: "Invalid sortOrder value" }).default("desc"),

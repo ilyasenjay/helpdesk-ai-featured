@@ -178,4 +178,78 @@ describe("ReplyForm", () => {
       expect(cached?.messages).toHaveLength(1);
     });
   });
+
+  describe("polish", () => {
+    it("shows a validation error and does not call POST when the draft is empty", async () => {
+      mockedAxios.post = vi.fn();
+      renderForm();
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("button", { name: /polish/i }));
+      await waitFor(() =>
+        expect(screen.getByText("Reply cannot be empty")).toBeInTheDocument()
+      );
+      expect(mockedAxios.post).not.toHaveBeenCalled();
+    });
+
+    it("POSTs the draft to /api/tickets/:id/polish and replaces the textarea with the result", async () => {
+      mockedAxios.post = vi.fn().mockResolvedValue({
+        data: { body: "Thank you for reaching out — we're looking into this now." },
+      });
+      renderForm();
+      const user = userEvent.setup();
+      await user.type(screen.getByLabelText("Reply"), "thnks we look into it");
+      await user.click(screen.getByRole("button", { name: /polish/i }));
+
+      await waitFor(() =>
+        expect(mockedAxios.post).toHaveBeenCalledWith(
+          "/api/tickets/42/polish",
+          { body: "thnks we look into it" },
+          { withCredentials: true }
+        )
+      );
+      await waitFor(() =>
+        expect(screen.getByLabelText("Reply")).toHaveValue(
+          "Thank you for reaching out — we're looking into this now."
+        )
+      );
+    });
+
+    it("surfaces a subscription/billing error message when the AI provider rejects the request", async () => {
+      const err = Object.assign(new Error("Bad Gateway"), {
+        isAxiosError: true,
+        response: {
+          data: {
+            code: "ai_auth_failed",
+            message:
+              "The Claude API key was rejected. It may be invalid, revoked, or the account behind it no longer has an active subscription — check the Anthropic Console.",
+          },
+        },
+      });
+      mockedAxios.post = vi.fn().mockRejectedValue(err);
+      mockedAxios.isAxiosError = vi.fn().mockReturnValue(true) as any;
+      renderForm();
+      const user = userEvent.setup();
+      await user.type(screen.getByLabelText("Reply"), "Thanks for your patience.");
+      await user.click(screen.getByRole("button", { name: /polish/i }));
+
+      await waitFor(() =>
+        expect(screen.getByTestId("form-root-error")).toHaveTextContent(/no longer has an active subscription/i)
+      );
+      expect(screen.getByLabelText("Reply")).toHaveValue("Thanks for your patience.");
+    });
+
+    it("does not clear an existing root error's draft when polish fails", async () => {
+      mockedAxios.post = vi.fn().mockRejectedValue(new Error("Network Error"));
+      mockedAxios.isAxiosError = vi.fn().mockReturnValue(false) as any;
+      renderForm();
+      const user = userEvent.setup();
+      await user.type(screen.getByLabelText("Reply"), "Draft reply text");
+      await user.click(screen.getByRole("button", { name: /polish/i }));
+
+      await waitFor(() =>
+        expect(screen.getByTestId("form-root-error")).toHaveTextContent("Something went wrong")
+      );
+      expect(screen.getByLabelText("Reply")).toHaveValue("Draft reply text");
+    });
+  });
 });

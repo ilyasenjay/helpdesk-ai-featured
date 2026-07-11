@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import { Sparkles } from "lucide-react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
 import { FormRootError } from "./FormRootError";
@@ -22,6 +23,13 @@ async function createMessage(ticketId: string, data: FormData): Promise<Message>
   return res.data.message;
 }
 
+async function polishReply(ticketId: string, data: FormData): Promise<string> {
+  const res = await axios.post<{ body: string }>(`/api/tickets/${ticketId}/polish`, data, {
+    withCredentials: true,
+  });
+  return res.data.body;
+}
+
 interface Props {
   ticket: TicketDetail;
 }
@@ -32,8 +40,11 @@ export function ReplyForm({ ticket }: Props) {
   const {
     register,
     handleSubmit,
+    getValues,
+    setValue,
     reset,
     setError,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
 
@@ -50,6 +61,26 @@ export function ReplyForm({ ticket }: Props) {
     },
   });
 
+  const polishMutation = useMutation({
+    mutationFn: (data: FormData) => polishReply(ticket.id.toString(), data),
+    onSuccess: (polishedBody) => {
+      clearErrors("root");
+      setValue("body", polishedBody, { shouldValidate: true, shouldDirty: true });
+    },
+    onError: (err) => {
+      setError("root", { message: getErrorMessage(err) });
+    },
+  });
+
+  const handlePolish = () => {
+    const parsed = schema.safeParse({ body: getValues("body") });
+    if (!parsed.success) {
+      setError("body", { message: parsed.error.issues[0]?.message ?? "Reply cannot be empty" });
+      return;
+    }
+    polishMutation.mutate(parsed.data);
+  };
+
   return (
     <form
       onSubmit={handleSubmit((data) => mutation.mutate(data))}
@@ -64,7 +95,16 @@ export function ReplyForm({ ticket }: Props) {
       />
       {errors.body && <p className="field-error">{errors.body.message}</p>}
       <FormRootError message={errors.root?.message} />
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handlePolish}
+          disabled={isSubmitting || mutation.isPending || polishMutation.isPending}
+        >
+          <Sparkles />
+          {polishMutation.isPending ? "Polishing…" : "Polish"}
+        </Button>
         <Button type="submit" disabled={isSubmitting || mutation.isPending}>
           {mutation.isPending ? "Sending…" : "Send Reply"}
         </Button>
