@@ -4,6 +4,7 @@ import { z } from "zod";
 import prisma from "../lib/db";
 import { requireWebhookSecret } from "../lib/requireWebhookSecret";
 import { inboundEmailSchema } from "../lib/tickets";
+import { classifyTicketCategory } from "../lib/ai";
 import { MessageSender } from "../generated/prisma/client";
 
 const router = Router();
@@ -48,14 +49,19 @@ router.post("/email", multer().none(), requireWebhookSecret, async (req, res) =>
 
   const { from, fromName, subject, body } = parsed.data;
 
-  await prisma.$transaction(async (tx) => {
+  const ticket = await prisma.$transaction(async (tx) => {
     const ticket = await tx.ticket.create({
       data: { subject, body, customerEmail: from, senderName: fromName },
     });
     await tx.message.create({
       data: { body, sender: MessageSender.CUSTOMER, ticketId: ticket.id },
     });
+    return ticket;
   });
+
+  // Non-blocking: classification runs in the background and never throws, so the
+  // webhook responds immediately without waiting on the AI call.
+  void classifyTicketCategory(ticket.id);
 
   res.status(200).json({ ok: true });
 });
