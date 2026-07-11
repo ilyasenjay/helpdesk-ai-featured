@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { StatusBadge } from "../components/TicketsTable";
 import { TicketMessageCard } from "../components/ticket-detail/TicketMessageCard";
 import { AiSummaryCard } from "../components/ticket-detail/AiSummaryCard";
+import { SummarizeButton } from "../components/ticket-detail/SummarizeButton";
 import { ConversationCard } from "../components/ticket-detail/ConversationCard";
 import { TicketDetailsPanel } from "../components/ticket-detail/TicketDetailsPanel";
 import { TicketDetailSkeleton } from "../components/ticket-detail/TicketDetailSkeleton";
@@ -73,6 +74,7 @@ export default function TicketDetailPage() {
         <div className="space-y-6">
           <TicketMessageCard ticket={ticket} />
           {ticket.aiSummary && <AiSummaryCard summary={ticket.aiSummary} />}
+          <SummarizeButton ticket={ticket} />
           <ConversationCard ticket={ticket} />
         </div>
 

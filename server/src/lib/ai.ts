@@ -1,12 +1,49 @@
 import { APICallError } from "ai";
+import { MessageSender } from "../generated/prisma/client";
 import { env } from "./env";
 
-export const POLISH_MODEL_ID = env.groqModel;
+export const AI_MODEL_ID = env.groqModel;
 
 export interface AiErrorResponse {
   status: number;
   code: string;
   message: string;
+}
+
+export function formatPolishedReply(params: {
+  polishedText: string;
+  customerName: string;
+  agentName: string;
+  agentEmail: string;
+}): string {
+  const greeting = `Hi ${params.customerName},`;
+  const signature = `Best regards,\n${params.agentName}\n${params.agentEmail}`;
+  return `${greeting}\n\n${params.polishedText.trim()}\n\n${signature}`;
+}
+
+function labelForSender(sender: MessageSender, customerName: string): string {
+  switch (sender) {
+    case MessageSender.CUSTOMER:
+      return customerName;
+    case MessageSender.AGENT:
+      return "Agent";
+    case MessageSender.AI:
+      return "AI";
+  }
+}
+
+export function buildTicketSummaryPrompt(params: {
+  subject: string;
+  customerName: string;
+  body: string;
+  messages: { sender: MessageSender; body: string }[];
+}): string {
+  const transcript = [
+    `${params.customerName}: ${params.body}`,
+    ...params.messages.map((m) => `${labelForSender(m.sender, params.customerName)}: ${m.body}`),
+  ].join("\n\n");
+
+  return `Ticket subject: ${params.subject}\n\nFull conversation so far:\n${transcript}`;
 }
 
 function parseProviderErrorMessage(responseBody?: string): string | undefined {
@@ -35,7 +72,7 @@ export function classifyAiError(err: unknown): AiErrorResponse {
         status: 502,
         code: "ai_billing_required",
         message:
-          "The Groq API account has no active billing/credits. Check your plan at console.groq.com to re-enable AI polish.",
+          "The Groq API account has no active billing/credits. Check your plan at console.groq.com to re-enable AI features.",
       };
     }
 
@@ -52,7 +89,7 @@ export function classifyAiError(err: unknown): AiErrorResponse {
       return {
         status: 502,
         code: "ai_model_not_found",
-        message: `The configured Groq model ("${POLISH_MODEL_ID}") wasn't found. Check GROQ_MODEL against the current model list at console.groq.com/docs/models and update it.`,
+        message: `The configured Groq model ("${AI_MODEL_ID}") wasn't found. Check GROQ_MODEL against the current model list at console.groq.com/docs/models and update it.`,
       };
     }
 
@@ -79,6 +116,6 @@ export function classifyAiError(err: unknown): AiErrorResponse {
   return {
     status: 502,
     code: "ai_unavailable",
-    message: "The AI polish feature is temporarily unavailable. Please try again later.",
+    message: "This AI feature is temporarily unavailable. Please try again later.",
   };
 }

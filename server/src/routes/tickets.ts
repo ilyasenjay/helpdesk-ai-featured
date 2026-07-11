@@ -11,7 +11,7 @@ import {
   ticketsQuerySchema,
   updateTicketSchema,
 } from "../lib/tickets";
-import { classifyAiError, POLISH_MODEL_ID } from "../lib/ai";
+import { AI_MODEL_ID, buildTicketSummaryPrompt, classifyAiError, formatPolishedReply } from "../lib/ai";
 import { env } from "../lib/env";
 
 const router = Router();
@@ -129,7 +129,7 @@ router.post("/:id/polish", requireAuth, async (req, res) => {
 
   try {
     const { text } = await generateText({
-      model: groq(POLISH_MODEL_ID),
+      model: groq(AI_MODEL_ID),
       system:
         "You are a helpdesk assistant that polishes a support agent's draft reply before it is sent to a customer. " +
         "Improve grammar, clarity, and professional tone while preserving the original meaning and any specific " +
@@ -138,9 +138,63 @@ router.post("/:id/polish", requireAuth, async (req, res) => {
         "— both are added automatically.",
       prompt: `Customer's ticket subject: ${ticket.subject}\n\nCustomer's original message: ${ticket.body}\n\nAgent's draft reply:\n${parsed.data.body}`,
     });
-    const greeting = `Hi ${ticket.senderName},`;
-    const signature = `Best regards,\n${req.user!.name}\n${req.user!.email}`;
-    res.json({ body: `${greeting}\n\n${text.trim()}\n\n${signature}` });
+    res.json({
+      body: formatPolishedReply({
+        polishedText: text,
+        customerName: ticket.senderName,
+        agentName: req.user!.name,
+        agentEmail: req.user!.email,
+      }),
+    });
+  } catch (err) {
+    const { status, code, message } = classifyAiError(err);
+    res.status(status).json({ code, message });
+  }
+});
+
+router.post("/:id/summarize", requireAuth, async (req, res) => {
+  if (!env.groqApiKey) {
+    res.status(503).json({
+      code: "ai_not_configured",
+      message: "AI summary isn't configured on this server. Add GROQ_API_KEY to enable it.",
+    });
+    return;
+  }
+
+  const id = Number(req.params.id as string);
+  const ticket = await prisma.ticket.findUnique({
+    where: { id },
+    select: {
+      subject: true,
+      body: true,
+      senderName: true,
+      messages: { orderBy: { createdAt: "asc" }, select: { sender: true, body: true } },
+    },
+  });
+  if (!ticket) {
+    res.status(404).json({ message: "Ticket not found" });
+    return;
+  }
+
+  try {
+    const { text } = await generateText({
+      model: groq(AI_MODEL_ID),
+      system:
+        "You are a helpdesk assistant that writes a concise internal summary of a support ticket for an agent's " +
+        "quick reference. Summarize the customer's issue, the key points raised in the conversation, and the " +
+        "current state or any commitments made so far. Write 2-4 sentences of plain prose. Do not address the " +
+        "customer directly, and do not add a greeting, sign-off, or preamble — just the summary.",
+      prompt: buildTicketSummaryPrompt({
+        subject: ticket.subject,
+        customerName: ticket.senderName,
+        body: ticket.body,
+        messages: ticket.messages,
+      }),
+    });
+
+    const aiSummary = text.trim();
+    await prisma.ticket.update({ where: { id }, data: { aiSummary } });
+    res.json({ aiSummary });
   } catch (err) {
     const { status, code, message } = classifyAiError(err);
     res.status(status).json({ code, message });
