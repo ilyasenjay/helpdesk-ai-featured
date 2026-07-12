@@ -119,6 +119,14 @@ model Ticket {
   resolvedByAi  Boolean         @default(false)
   assignedToId  String?
   assignedTo    User?           @relation("TicketAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+  gmailMessageId String?        @unique
+  // Gmail's conversation id — lets the poller recognize a new inbound message as a reply within
+  // an existing ticket's thread instead of creating a duplicate ticket.
+  gmailThreadId String?         @unique
+  // RFC822 Message-ID header of the most recent message in the thread (inbound or one of our own
+  // replies) — used as In-Reply-To/References when we send the next reply, so it threads
+  // correctly in the customer's mail client instead of arriving as a disconnected new email.
+  lastGmailMessageIdHeader String?
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   messages      Message[]
@@ -134,6 +142,9 @@ model Message {
   ticket    Ticket        @relation(fields: [ticketId], references: [id], onDelete: Cascade)
   userId    String?
   user      User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  // Dedupe guard, mirroring Ticket.gmailMessageId — only set for messages the Gmail poller added
+  // as a reply within an existing thread (not the message that originally created the ticket).
+  gmailMessageId String?     @unique
   createdAt DateTime      @default(now())
 
   @@map("message")

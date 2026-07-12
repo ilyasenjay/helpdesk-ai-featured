@@ -13,4 +13,9 @@ export const env = {
   mailgunWebhookSigningKey: process.env.MAILGUN_WEBHOOK_SIGNING_KEY,
   groqApiKey: process.env.GROQ_API_KEY,
   groqModel: process.env.GROQ_MODEL ?? "llama-3.3-70b-versatile",
+  gmailClientId: process.env.GMAIL_CLIENT_ID,
+  gmailClientSecret: process.env.GMAIL_CLIENT_SECRET,
+  gmailRefreshToken: process.env.GMAIL_REFRESH_TOKEN,
+  gmailAddress: process.env.GMAIL_ADDRESS,
+  gmailSmtpAppPassword: process.env.GMAIL_SMTP_APP_PASSWORD,
 };

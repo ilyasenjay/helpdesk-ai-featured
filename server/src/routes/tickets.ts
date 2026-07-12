@@ -13,6 +13,7 @@ import {
 } from "../lib/tickets";
 import { AI_MODEL_ID, buildTicketSummaryPrompt, classifyAiError, formatPolishedReply } from "../lib/ai";
 import { env } from "../lib/env";
+import { sendTicketReplyIfPossible } from "../lib/gmail/reply";
 
 const router = Router();
 
@@ -213,7 +214,10 @@ router.post("/:id/messages", requireAuth, async (req, res) => {
     return;
   }
 
-  const ticket = await prisma.ticket.findUnique({ where: { id }, select: { id: true } });
+  const ticket = await prisma.ticket.findUnique({
+    where: { id },
+    select: { id: true, subject: true, customerEmail: true, gmailThreadId: true, lastGmailMessageIdHeader: true },
+  });
   if (!ticket) {
     res.status(404).json({ message: "Ticket not found" });
     return;
@@ -227,6 +231,11 @@ router.post("/:id/messages", requireAuth, async (req, res) => {
       userId: req.user!.id,
     },
   });
+
+  // Non-blocking: emails the reply to the customer (if this ticket has a Gmail thread to reply
+  // into) without making the agent wait on the SMTP round-trip.
+  void sendTicketReplyIfPossible(ticket, parsed.data.body);
+
   res.status(201).json({ message });
 });
 

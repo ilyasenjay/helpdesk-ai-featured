@@ -9,6 +9,7 @@ import { requireAuth } from "./lib/requireAuth";
 import { env } from "./lib/env";
 import { startQueue } from "./lib/queue";
 import { startTicketClassificationWorker, startAutoResolveWorker } from "./lib/ai";
+import { startGmailPollWorker } from "./lib/gmail/poll";
 import usersRouter from "./routes/users";
 import ticketsRouter from "./routes/tickets";
 import webhooksRouter from "./routes/webhooks";
@@ -51,6 +52,7 @@ app.use("/api/dashboard", dashboardRouter);
 await startQueue();
 await startTicketClassificationWorker();
 await startAutoResolveWorker();
+await startGmailPollWorker();
 
 app.listen(env.port, () => {
   console.log(`Server running on http://localhost:${env.port}`);

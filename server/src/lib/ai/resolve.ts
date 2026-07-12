@@ -7,6 +7,7 @@ import { env } from "../env";
 import prisma from "../db";
 import { boss } from "../queue";
 import { AI_MODEL_ID } from "./model";
+import { sendTicketReplyIfPossible } from "../gmail/reply";
 
 const AUTO_RESOLVE_QUEUE = "auto-resolve-ticket";
 const ESCALATE_SENTINEL = "ESCALATE";
@@ -52,7 +53,15 @@ function formatAutoResolveReply(params: { replyText: string; customerName: strin
 export async function attemptAutoResolveTicket(ticketId: number): Promise<void> {
   const ticket = await prisma.ticket.findUnique({
     where: { id: ticketId },
-    select: { status: true, subject: true, body: true, senderName: true },
+    select: {
+      status: true,
+      subject: true,
+      body: true,
+      senderName: true,
+      customerEmail: true,
+      gmailThreadId: true,
+      lastGmailMessageIdHeader: true,
+    },
   });
   if (!ticket) return;
   if (ticket.status !== TicketStatus.new && ticket.status !== TicketStatus.processing) return;
@@ -94,10 +103,12 @@ export async function attemptAutoResolveTicket(ticketId: number): Promise<void> 
     return;
   }
 
+  const replyBody = formatAutoResolveReply({ replyText, customerName: ticket.senderName });
+
   await prisma.$transaction([
     prisma.message.create({
       data: {
-        body: formatAutoResolveReply({ replyText, customerName: ticket.senderName }),
+        body: replyBody,
         sender: MessageSender.AI,
         ticketId,
       },
@@ -107,6 +118,8 @@ export async function attemptAutoResolveTicket(ticketId: number): Promise<void> 
       data: { status: TicketStatus.resolved, resolvedByAi: true },
     }),
   ]);
+
+  await sendTicketReplyIfPossible({ id: ticketId, ...ticket }, replyBody);
 }
 
 // Non-blocking: enqueues the auto-resolve job and returns immediately — callers (e.g. the inbound
