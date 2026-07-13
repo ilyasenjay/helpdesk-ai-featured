@@ -1,5 +1,6 @@
 import "./sentry";
 import "./lib/env";
+import path from "path";
 import * as Sentry from "@sentry/bun";
 import express from "express";
 import cors from "cors";
@@ -18,6 +19,11 @@ import webhooksRouter from "./routes/webhooks";
 import dashboardRouter from "./routes/dashboard";
 
 const app = express();
+
+// Railway terminates TLS at its edge proxy and forwards plain HTTP — without this, Express sees
+// every request as insecure, which breaks Better Auth's secure cookies and express-rate-limit's
+// client IP detection (X-Forwarded-For).
+app.set("trust proxy", 1);
 
 app.use(helmet());
 app.use(cors({ origin: env.clientUrl, credentials: true }));
@@ -50,6 +56,16 @@ app.get("/api/me", requireAuth, (req, res) => {
 app.use("/api/users", usersRouter);
 app.use("/api/tickets", ticketsRouter);
 app.use("/api/dashboard", dashboardRouter);
+
+// Serve the built client (single Railway service hosts both the API and the frontend).
+// Keeps client and server same-origin, so no cross-site cookie/CORS configuration is needed.
+const clientDistPath = path.join(import.meta.dir, "../../client/dist");
+app.use(express.static(clientDistPath));
+
+app.get("/*splat", (req, res, next) => {
+  if (req.path.startsWith("/api")) return next();
+  res.sendFile(path.join(clientDistPath, "index.html"));
+});
 
 // Must be registered after all routes, before any other error-handling middleware
 Sentry.setupExpressErrorHandler(app);

@@ -33,6 +33,21 @@ cd client && PATH=~/.nvm/versions/node/v22.22.3/bin:$PATH node_modules/.bin/vite
 
 The Vite dev server proxies all `/api/*` requests to `http://localhost:3000`.
 
+## Docker / Deployment
+
+- `Dockerfile` (repo root) builds a single image: Node 22 (fetched via `ADD` — Bun's crypto shim
+  breaks Vite's build) runs `tsc && vite build` for the client, Bun runs the server, which serves
+  the built client as static files plus `/api/*` — one service, one origin, no CORS/cookie
+  cross-site configuration needed. See `RAILWAY.md` for the full Railway setup and env var list.
+- **Always set `ADMIN_EMAIL`/`ADMIN_PASSWORD` when building or running this image** — the
+  container's `CMD` runs `bun run db:deploy && bun run db:seed && bun run start` on every start, so
+  a fresh database always gets that admin account created automatically. `server/src/seed.ts` is
+  idempotent (skips if the email already exists) and no-ops without failing the startup chain if
+  those vars are unset — but omitting them means a fresh deploy/local image has no way to log in.
+- When testing a locally-built image against a fresh Postgres container, seed happens
+  automatically on `docker run` (no manual `docker exec ... db:seed` needed) as long as
+  `ADMIN_EMAIL`/`ADMIN_PASSWORD` are passed as `-e` vars.
+
 ## Documentation
 
 Always use context7 to fetch up-to-date documentation for any library, framework, or tool used in this project — including Express, React, Vite, Prisma, Tailwind, and the Anthropic SDK. Add `use context7` to any prompt that involves library APIs, configuration, or version-specific behavior.
@@ -112,7 +127,7 @@ To invoke: mention "write e2e tests" or "test this" and the agent will be launch
 
 ## Better Auth
 
-- Auth client (`client/src/lib/auth.ts`) uses `baseURL: "http://localhost:5173"` so requests go through the Vite proxy — do **not** point it directly at `localhost:3000` or cookies will be scoped to the wrong origin.
+- Auth client (`client/src/lib/auth.ts`) sets `baseURL: "http://localhost:5173"` only in dev (`import.meta.env.DEV`) so requests go through the Vite proxy — do **not** point it directly at `localhost:3000` or cookies will be scoped to the wrong origin. In production the built client is served same-origin by the server (see Docker/Deployment), so `baseURL` is omitted there.
 - Prisma CLI must be run via `bun node_modules/prisma/build/index.js` — `bunx prisma` fails on Node 16.
 - `inferAdditionalFields<typeof auth>()` is added as a plugin to the auth client so `session.user.role` is properly typed — no manual type cast needed.
 - User roles: `admin` and `agent`. Role is set server-side only (`input: false`) — clients cannot escalate their own role.

@@ -182,7 +182,7 @@ describe("ReplyForm", () => {
 
   describe("polish", () => {
     it("shows a validation error and does not call POST when the draft is empty", async () => {
-      mockedAxios.post = vi.fn();
+      mockedAxios.post = vi.fn() as any;
       renderForm();
       const user = userEvent.setup();
       await user.click(screen.getByRole("button", { name: /polish/i }));

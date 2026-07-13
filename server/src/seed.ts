@@ -10,9 +10,12 @@ const prisma = new PrismaClient({ adapter });
 const email = process.env.ADMIN_EMAIL!;
 const password = process.env.ADMIN_PASSWORD!;
 
+// Runs on every container start (see Dockerfile CMD) so a fresh deploy always has an accessible
+// admin account — exits 0 rather than failing the startup chain when the vars aren't set, since
+// they're optional after the first admin has been created.
 if (!email || !password) {
-  console.error("ADMIN_EMAIL and ADMIN_PASSWORD must be set in .env");
-  process.exit(1);
+  console.warn("ADMIN_EMAIL/ADMIN_PASSWORD not set — skipping admin seed.");
+  process.exit(0);
 }
 
 async function seed() {
