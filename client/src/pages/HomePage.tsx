@@ -30,7 +30,7 @@ export default function HomePage() {
 
   return (
     <div>
-      <h1 className="mb-4 text-xl font-semibold">Dashboard</h1>
+      <h1 className="mb-4 font-heading text-2xl font-semibold tracking-tight">Dashboard</h1>
 
       {error && <p className="text-sm text-destructive">{error.message}</p>}
 

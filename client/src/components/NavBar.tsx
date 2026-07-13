@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { authClient } from "../lib/auth";
 import { Role } from "../lib/roles";
 
@@ -12,27 +12,40 @@ export default function NavBar() {
   }
 
   return (
-    <nav className="flex items-center justify-between px-6 py-3 border-b border-gray-200 bg-white">
-      <Link to="/" className="font-semibold text-gray-900 hover:text-gray-600 transition-colors">Helpdesk</Link>
-      <div className="flex items-center gap-4">
-        <Link to="/tickets" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+    <nav className="flex items-center justify-between border-b border-border bg-card px-6 py-3.5">
+      <NavLink
+        to="/"
+        className="font-heading text-lg font-semibold tracking-tight text-foreground transition-colors hover:text-primary"
+      >
+        Helpdesk
+      </NavLink>
+      <div className="flex items-center gap-5">
+        <NavLink to="/tickets" className={navLinkClass}>
           Tickets
-        </Link>
+        </NavLink>
         {session?.user.role === Role.admin && (
-          <Link to="/users" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+          <NavLink to="/users" className={navLinkClass}>
             Users
-          </Link>
+          </NavLink>
         )}
         {session?.user.name && (
-          <span className="text-sm text-gray-600">{session.user.name}</span>
+          <span className="border-l border-border pl-5 text-sm text-muted-foreground">
+            {session.user.name}
+          </span>
         )}
         <button
           onClick={handleSignOut}
-          className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           Sign out
         </button>
       </div>
     </nav>
   );
+}
+
+function navLinkClass({ isActive }: { isActive: boolean }) {
+  return `text-sm transition-colors ${
+    isActive ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground"
+  }`;
 }

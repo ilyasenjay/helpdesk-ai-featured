@@ -1,8 +1,9 @@
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Sparkles } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { StatusBadge } from "../components/TicketsTable";
+import { AiStamp } from "../components/AiStamp";
 import { TicketMessageCard } from "../components/ticket-detail/TicketMessageCard";
 import { AiSummaryCard } from "../components/ticket-detail/AiSummaryCard";
 import { SummarizeButton } from "../components/ticket-detail/SummarizeButton";
@@ -62,19 +63,18 @@ export default function TicketDetailPage() {
 
       <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="mb-1 text-xs text-muted-foreground">Ticket #{ticket.id}</div>
-          <h1 className="text-2xl font-semibold">{sanitizeText(ticket.subject)}</h1>
+          <div className="mb-1 font-mono text-xs text-muted-foreground">Ticket #{ticket.id}</div>
+          <h1 className="font-heading text-2xl font-semibold tracking-tight">
+            {sanitizeText(ticket.subject)}
+          </h1>
         </div>
         <div className="flex items-center gap-2">
           <span data-testid="ticket-status-badge">
             <StatusBadge status={ticket.status} />
           </span>
           {ticket.resolvedByAi && (
-            <span
-              data-testid="ticket-resolved-by-ai-badge"
-              className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium ring-1 ring-primary/20"
-            >
-              <Sparkles size={11} /> Resolved by AI
+            <span data-testid="ticket-resolved-by-ai-badge">
+              <AiStamp>Resolved by AI</AiStamp>
             </span>
           )}
         </div>

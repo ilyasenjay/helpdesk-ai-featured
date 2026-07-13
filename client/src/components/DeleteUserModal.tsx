@@ -33,7 +33,7 @@ export function DeleteUserModal({ user, onClose }: Props) {
       />
       <div className="modal-panel max-w-sm">
         <div className="flex items-start justify-between mb-4">
-          <h2 className="text-lg font-semibold">Delete User</h2>
+          <h2 className="font-heading text-lg font-semibold">Delete User</h2>
           <button type="button" aria-label="Close" onClick={onClose}>
             <X size={18} />
           </button>

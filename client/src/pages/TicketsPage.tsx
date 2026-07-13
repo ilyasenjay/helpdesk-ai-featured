@@ -103,7 +103,7 @@ export default function TicketsPage() {
   return (
     <div className="flex h-full flex-col">
       <div className="mb-3 flex flex-shrink-0 items-center justify-between">
-        <h1 className="text-xl font-semibold">Tickets</h1>
+        <h1 className="font-heading text-2xl font-semibold tracking-tight">Tickets</h1>
       </div>
 
       <div className="mb-3 flex flex-shrink-0 flex-wrap items-center gap-3">

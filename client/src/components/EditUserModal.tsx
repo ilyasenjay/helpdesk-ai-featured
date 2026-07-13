@@ -13,7 +13,7 @@ export function EditUserModal({ user, onClose }: Props) {
       <div className="modal-backdrop" onClick={onClose} />
       <div className="modal-panel max-w-md">
         <div className="modal-header">
-          <h2 className="text-lg font-semibold">Edit User</h2>
+          <h2 className="font-heading text-lg font-semibold">Edit User</h2>
           <button
             type="button"
             aria-label="Close"

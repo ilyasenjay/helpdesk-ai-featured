@@ -8,10 +8,10 @@ interface Props {
 
 export function AiSummaryCard({ summary }: Props) {
   return (
-    <Card className="bg-accent/50 ring-primary/20">
+    <Card className="bg-ai/5 ring-ai/25">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <Sparkles size={16} className="text-primary" />
+          <Sparkles size={15} className="text-ai-foreground" />
           <CardTitle>AI Summary</CardTitle>
         </div>
       </CardHeader>

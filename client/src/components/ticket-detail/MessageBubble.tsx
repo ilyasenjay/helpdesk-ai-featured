@@ -1,8 +1,8 @@
-import { Sparkles } from "lucide-react";
 import { formatDateTime } from "../../lib/format";
 import { sanitizeText } from "../../lib/sanitize";
 import { MessageSender } from "../../lib/tickets";
 import type { Message } from "../../lib/tickets";
+import { AiStamp } from "../AiStamp";
 
 const senderLabels: Record<MessageSender, string> = {
   [MessageSender.customer]: "Customer",
@@ -21,13 +21,16 @@ export function MessageBubble({ message }: { message: Message }) {
           isAgent
             ? "bg-primary text-primary-foreground"
             : isAi
-              ? "bg-accent ring-1 ring-primary/20"
+              ? "bg-ai/10 ring-1 ring-ai/30"
               : "bg-muted"
         }`}
       >
-        <div className="mb-1 flex items-center gap-1.5 text-xs opacity-70">
-          {isAi && <Sparkles size={11} />}
-          <span>{senderLabels[message.sender]}</span>
+        <div className="mb-1.5 flex items-center gap-1.5 text-xs opacity-70">
+          {isAi ? (
+            <AiStamp>{senderLabels[message.sender]}</AiStamp>
+          ) : (
+            <span>{senderLabels[message.sender]}</span>
+          )}
           <span>·</span>
           <span>{formatDateTime(message.createdAt)}</span>
         </div>

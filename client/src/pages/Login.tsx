@@ -40,10 +40,14 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-8 bg-background px-4">
+      <div className="text-center">
+        <h1 className="font-heading text-3xl font-semibold tracking-tight">Helpdesk</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Sign in to manage support tickets</p>
+      </div>
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-2xl">Sign in</CardTitle>
+          <CardTitle className="text-xl">Sign in</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
