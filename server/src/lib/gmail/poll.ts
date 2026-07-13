@@ -117,10 +117,16 @@ async function processMessage(messageId: string): Promise<void> {
         console.error(`Skipping unprocessable Gmail message ${messageId}:`, validated.error.issues[0]?.message);
       }
     }
+  } else {
+    console.error(`Could not fetch/parse Gmail message ${messageId} — no raw body or from address`);
   }
 
-  // Mark it read so it's not picked up again next poll — done last, and outside the branches
-  // above, so a message we couldn't parse/validate still doesn't get retried forever.
+  // Mark it read for inbox hygiene — purely cosmetic. Correctness never depends on this: dedup is
+  // handled by createTicketFromInboundEmail (unique on ticket.gmailMessageId) and
+  // addReplyToExistingTicket (unique on message.gmailMessageId) above, not by read/unread state.
+  // Relying on "is:unread" alone previously meant any read event from any client (opening the
+  // email to check it, another device syncing, etc.) — not just this call — would silently and
+  // permanently drop the message from being picked up, with no ticket and no error logged.
   const gmail = getGmailClient();
   await gmail.users.messages.modify({
     userId: "me",
@@ -133,9 +139,11 @@ export async function pollGmailInbox(): Promise<void> {
   if (!isGmailConfigured()) return;
 
   const gmail = getGmailClient();
+  // Not "is:unread" — see processMessage's comment. Bounded to a recent window so this stays
+  // cheap; DB-side dedup (not read state) is what makes re-scanning the same messages safe.
   const { data } = await gmail.users.messages.list({
     userId: "me",
-    q: `label:${GMAIL_TICKET_LABEL} is:unread`,
+    q: `label:${GMAIL_TICKET_LABEL} newer_than:2d`,
     maxResults: 25,
   });
 
