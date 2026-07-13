@@ -39,7 +39,8 @@ WORKDIR /app/server
 ENV NODE_ENV=production
 EXPOSE 3000
 
-# db:seed is idempotent (skips if ADMIN_EMAIL already exists) and no-ops if ADMIN_EMAIL/
-# ADMIN_PASSWORD aren't set — safe to run on every start so a fresh deploy always has a
-# working admin login. Set ADMIN_EMAIL/ADMIN_PASSWORD whenever running this image.
-CMD ["sh", "-c", "bun run db:deploy && bun run db:seed && bun run start"]
+# db:seed and db:seed:ai-agent are both idempotent (skip if the row already exists) — safe to run
+# on every start. db:seed no-ops if ADMIN_EMAIL/ADMIN_PASSWORD aren't set, but db:seed:ai-agent has
+# no such gate (it's a fixed system user needed for ticket auto-assignment/auto-resolve), so it
+# always runs. Set ADMIN_EMAIL/ADMIN_PASSWORD whenever running this image for a working admin login.
+CMD ["sh", "-c", "bun run db:deploy && bun run db:seed && bun run db:seed:ai-agent && bun run start"]
