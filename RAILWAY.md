@@ -45,8 +45,7 @@ Postgres plugin for the database.
 | `VITE_SENTRY_DSN` | Client-side error tracking — must be set as a **build-time** var (Railway build args), since Vite inlines it at build time |
 | `GROQ_API_KEY`, `GROQ_MODEL` | The "Polish" reply button |
 | `MAILGUN_WEBHOOK_SIGNING_KEY` | Inbound email via Mailgun webhook |
-| `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_ADDRESS` | Inbound email via Gmail polling |
-| `GMAIL_SMTP_APP_PASSWORD` | Outbound email replies via Gmail SMTP |
+| `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN`, `GMAIL_ADDRESS` | Inbound email via Gmail polling **and** outbound replies — both go through the Gmail API (HTTPS), not SMTP. Railway blocks outbound SMTP ports entirely, so a raw SMTP relay silently hangs instead of sending; no separate app-password credential is needed. |
 
 `PORT` and `NODE_ENV` don't need to be set — Railway injects `PORT` automatically and the
 Dockerfile hardcodes `NODE_ENV=production`.

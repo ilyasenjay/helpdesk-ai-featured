@@ -17,5 +17,4 @@ export const env = {
   gmailClientSecret: process.env.GMAIL_CLIENT_SECRET,
   gmailRefreshToken: process.env.GMAIL_REFRESH_TOKEN,
   gmailAddress: process.env.GMAIL_ADDRESS,
-  gmailSmtpAppPassword: process.env.GMAIL_SMTP_APP_PASSWORD,
 };

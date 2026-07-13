@@ -75,7 +75,6 @@
         "helmet": "^8.2.0",
         "mailparser": "^3.9.14",
         "multer": "^2.2.0",
-        "nodemailer": "^9.0.3",
         "pg": "^8.22.0",
         "pg-boss": "^12.26.0",
         "prisma": "^7.8.0",
@@ -87,7 +86,6 @@
         "@types/express": "^5.0.6",
         "@types/mailparser": "^3.4.6",
         "@types/multer": "^2.2.0",
-        "@types/nodemailer": "^8.0.1",
         "@types/pg": "^8.20.0",
       },
       "peerDependencies": {
@@ -625,8 +623,6 @@
     "@types/multer": ["@types/multer@2.2.0", "", { "dependencies": { "@types/express": "*" } }, "sha512-3U1troeqGV8Ntp7Q3klwf4zr23VEoqYVocYXaswm9+8z3O9UHDYAqLxjJ/h550iRADTjKdOdhhasXw6gD6kYtg=="],
 
     "@types/node": ["@types/node@26.0.1", "", { "dependencies": { "undici-types": "~8.3.0" } }, "sha512-fc3KiUoBt6kie0N9bIW3E47vZsuaMf0PM2AaUpLCLT0s/LvX1nxAim6Fc049cNxODPpGm6qRAuUOB86SkRuPQw=="],
-
-    "@types/nodemailer": ["@types/nodemailer@8.0.1", "", { "dependencies": { "@types/node": "*" } }, "sha512-PxpaInm8V1JQDd4j0ds5HfvWQk8JupS1C0Picb96QJsrrRDjBH+DlK7L4ZdNSqNULhiZRQHc40nLVShaGxXAMw=="],
 
     "@types/pg": ["@types/pg@8.20.0", "", { "dependencies": { "@types/node": "*", "pg-protocol": "*", "pg-types": "^2.2.0" } }, "sha512-bEPFOaMAHTEP1EzpvHTbmwR8UsFyHSKsRisLIHVMXnpNefSbGA1bD6CVy+qKjGSqmZqNqBDV2azOBo8TgkcVow=="],
 

@@ -1,5 +1,5 @@
 import prisma from "../db";
-import { sendTicketReplyEmail, isSmtpConfigured } from "./send";
+import { sendTicketReplyEmail, canSendGmailReply } from "./send";
 
 interface TicketForReply {
   id: number;
@@ -10,12 +10,12 @@ interface TicketForReply {
 }
 
 // Emails `body` to the customer if this ticket has a known Gmail thread to reply into. No-ops
-// for tickets with no Gmail origin (e.g. created purely via the UI) or when SMTP isn't
+// for tickets with no Gmail origin (e.g. created purely via the UI) or when Gmail isn't
 // configured — the reply still exists in the ticket's message thread regardless, it just isn't
 // also sent as an actual email. Failures are logged, not thrown: a failed send shouldn't undo the
 // message that was already saved.
 export async function sendTicketReplyIfPossible(ticket: TicketForReply, body: string): Promise<void> {
-  if (!isSmtpConfigured() || !ticket.customerEmail || !ticket.gmailThreadId) return;
+  if (!canSendGmailReply() || !ticket.customerEmail || !ticket.gmailThreadId) return;
 
   try {
     const messageId = await sendTicketReplyEmail({
@@ -23,6 +23,7 @@ export async function sendTicketReplyIfPossible(ticket: TicketForReply, body: st
       subject: ticket.subject,
       body,
       inReplyTo: ticket.lastGmailMessageIdHeader,
+      gmailThreadId: ticket.gmailThreadId,
     });
 
     if (messageId) {
