@@ -6,6 +6,7 @@ import { MessageSender, TicketStatus } from "../../generated/prisma/client";
 import { inboundEmailSchema } from "../tickets";
 import { createTicketFromInboundEmail } from "../inbound-email";
 import { getGmailClient, isGmailConfigured } from "./client";
+import { stripQuotedReply, decodeCommonHtmlEntities } from "./quote";
 
 const GMAIL_POLL_QUEUE = "gmail-poll";
 const GMAIL_POLL_CRON = "* * * * *"; // every minute
@@ -45,6 +46,10 @@ async function fetchAndParseMessage(messageId: string): Promise<{ parsed: Parsed
   if (!fromAddress) return null;
 
   const htmlBody = typeof parsed.html === "string" ? parsed.html : undefined;
+  // Keep only the customer's new reply, not the quoted history of everything they're replying
+  // to — and decode any literal "&gt;"/"&amp;" left behind by clients whose plain-text
+  // alternative is a naive tag-strip of the HTML part rather than true plain text.
+  const body = decodeCommonHtmlEntities(stripQuotedReply(parsed.text ?? htmlBody ?? "(no body)"));
 
   return {
     threadId: data.threadId ?? undefined,
@@ -52,7 +57,7 @@ async function fetchAndParseMessage(messageId: string): Promise<{ parsed: Parsed
       fromAddress,
       fromName: parsed.from?.value[0]?.name || fromAddress,
       subject: (parsed.subject ?? "(no subject)").slice(0, MAX_SUBJECT_LENGTH),
-      body: (parsed.text ?? htmlBody ?? "(no body)").slice(0, MAX_BODY_LENGTH),
+      body: body.slice(0, MAX_BODY_LENGTH),
       messageIdHeader: parsed.messageId,
     },
   };

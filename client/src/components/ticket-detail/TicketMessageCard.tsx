@@ -2,6 +2,7 @@ import { Mail } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { formatDateTime, initials } from "../../lib/format";
 import { sanitizeText } from "../../lib/sanitize";
+import { renderPlainTextWithBold } from "../../lib/renderPlainText";
 import type { TicketDetail } from "../../lib/tickets";
 
 interface Props {
@@ -31,7 +32,9 @@ export function TicketMessageCard({ ticket }: Props) {
         </div>
       </CardHeader>
       <CardContent>
-        <p className="whitespace-pre-wrap text-sm leading-relaxed">{sanitizeText(ticket.body)}</p>
+        <p className="whitespace-pre-wrap text-sm leading-relaxed">
+          {renderPlainTextWithBold(sanitizeText(ticket.body))}
+        </p>
       </CardContent>
     </Card>
   );

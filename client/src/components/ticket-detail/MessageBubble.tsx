@@ -1,5 +1,6 @@
 import { formatDateTime } from "../../lib/format";
 import { sanitizeText } from "../../lib/sanitize";
+import { renderPlainTextWithBold } from "../../lib/renderPlainText";
 import { MessageSender } from "../../lib/tickets";
 import type { Message } from "../../lib/tickets";
 import { AiStamp } from "../AiStamp";
@@ -34,7 +35,9 @@ export function MessageBubble({ message }: { message: Message }) {
           <span>·</span>
           <span>{formatDateTime(message.createdAt)}</span>
         </div>
-        <p className="whitespace-pre-wrap leading-relaxed">{sanitizeText(message.body)}</p>
+        <p className="whitespace-pre-wrap leading-relaxed">
+          {renderPlainTextWithBold(sanitizeText(message.body))}
+        </p>
       </div>
     </div>
   );
