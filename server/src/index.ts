@@ -1,4 +1,6 @@
+import "./sentry";
 import "./lib/env";
+import * as Sentry from "@sentry/bun";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -48,6 +50,9 @@ app.get("/api/me", requireAuth, (req, res) => {
 app.use("/api/users", usersRouter);
 app.use("/api/tickets", ticketsRouter);
 app.use("/api/dashboard", dashboardRouter);
+
+// Must be registered after all routes, before any other error-handling middleware
+Sentry.setupExpressErrorHandler(app);
 
 await startQueue();
 await startTicketClassificationWorker();
